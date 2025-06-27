@@ -1,11 +1,13 @@
 cmake_minimum_required(VERSION 3.24)
-project(hs2025 LANGUAGES CXX CUDA)
+project(konch_core LANGUAGES CXX CUDA)
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+include(../cmake/cuda_arch.cmake)
 
-add_subdirectory(core)
+find_package(CUDAToolkit REQUIRED)
 
-include(cmake/scc.cmake)
+set(CMAKE_CUDA_USE_RESPONSE_FILE_FOR_INCLUDES OFF)
+set(CMAKE_CUDA_USE_RESPONSE_FILE_FOR_LIBRARIES OFF)
+set(CMAKE_CUDA_USE_RESPONSE_FILE_FOR_OBJECTS OFF)
 
 file(GLOB_RECURSE SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cu
@@ -38,5 +40,6 @@ target_include_directories(konch_core PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include/
 )
 
-# target_link_libraries(konch_core PRIVATE
-# )
+target_link_libraries(konch_core PRIVATE
+    CUDA::cudart
+)

@@ -1,0 +1,56 @@
+#ifndef _KONCH_ACCESSOR_
+#define _KONCH_ACCESSOR_
+
+#include "konch/accessor/accessor_kind.hpp"  // IWYU pragma: export
+#include "konch/atom/atom_kind.hpp"
+#include "konch/index/index_type.hpp"
+#include "konch/view/view_kind.hpp"
+
+namespace konch {
+
+template <AtomKind AtomT, ViewKind ViewT>
+class Accessor final {
+ private:
+  AtomT* data_;
+
+ public:
+  struct accessor_manual_feature {};
+
+  using atom_t = AtomT;
+
+  const ViewT view;
+
+  Accessor(AtomT* data, const ViewT& view)
+      : data_(data)
+      , view(view) {}
+
+  __device__ AtomT& operator[](index_t index) {
+    return data_[index];
+  }
+
+  __device__ AtomT operator[](index_t index) const {
+    return data_[index];
+  }
+
+  template <IndexType... IndexT>
+  __device__ index_t& operator()(IndexT... indices) {
+    return data_[view(indices...)];
+  }
+
+  template <IndexType... IndexT>
+  __device__ index_t operator()(IndexT... indices) const {
+    return data_[view(indices...)];
+  }
+
+  __host__ __device__ AtomT* data(index_t index = 0) {
+    return data_ + index;
+  }
+
+  __host__ __device__ const AtomT* data(index_t index = 0) const {
+    return data_ + index;
+  }
+};
+
+}  // namespace konch
+
+#endif  // _KONCH_ACCESSOR_
