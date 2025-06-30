@@ -23,7 +23,7 @@ class TensorView final {
     // TODO: check the ctor
 
     static_assert(sizeof...(sizes) == num_axis,
-        "Number of axes must match the number of arguments");
+        "Number of axes must match the number of arguments.");
 
     index_t axis = 0;
     ((sizes_[axis] = sizes, ++axis), ...);
@@ -41,7 +41,7 @@ class TensorView final {
     // TODO: check the shit
 
     static_assert(sizeof...(indices) == num_axis,
-        "Number of axes must match the number of arguments");
+        "Number of axes must match the number of arguments.");
 
     index_t address = 0;
     index_t axis = 0;
@@ -53,10 +53,25 @@ class TensorView final {
   __host__ __device__ index_t size(index_t axis = 0) const {
     return axis < naxis ? sizes_[axis] : 0;
   }
+
+  template <index_t _num_axis>
+  __host__ __device__ bool operator==(const TensorView<_num_axis>& view) const {
+    if constexpr (_num_axis != num_axis)
+      return false;
+    else {
+      for (index_t axis = 0; axis < naxis; ++axis)
+        if (view.sizes_[axis] != this->sizes_[axis]) return false;
+
+      return true;
+    }
+  }
 };
 
 template <IndexType... SizeT>
 TensorView(SizeT...) -> TensorView<sizeof...(SizeT)>;
+
+template <index_t num_axis>
+using View = TensorView<num_axis>;
 
 using ScalarView = TensorView<0>;
 using VectorView = TensorView<1>;

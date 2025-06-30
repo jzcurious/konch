@@ -33,21 +33,23 @@ class Accessor final {
   }
 
   template <IndexType... IndexT>
-  __device__ index_t& operator()(IndexT... indices) {
+  __device__ AtomT& operator()(IndexT... indices) {
     return data_[view(indices...)];
   }
 
   template <IndexType... IndexT>
-  __device__ index_t operator()(IndexT... indices) const {
+  __device__ AtomT operator()(IndexT... indices) const {
     return data_[view(indices...)];
   }
 
-  __host__ __device__ AtomT* data(index_t index = 0) {
-    return data_ + index;
+  template <IndexType... IndexT>
+  __host__ __device__ AtomT* data(IndexT... indices) {
+    return &data_[view(indices...)];
   }
 
-  __host__ __device__ const AtomT* data(index_t index = 0) const {
-    return data_ + index;
+  template <IndexType... IndexT>
+  __host__ __device__ AtomT* data(IndexT... indices) const {
+    return &data_[view(indices...)];
   }
 };
 

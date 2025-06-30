@@ -6,7 +6,10 @@
 namespace konch {
 
 template <class T>
-concept AccessorKind = requires { typename T::accessor_manual_feature; };
+concept AccessorKind = requires {
+  typename T::accessor_manual_feature;
+  typename T::atom_t;
+};
 
 }  // namespace konch
 
