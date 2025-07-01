@@ -7,7 +7,8 @@
 namespace konch {
 
 template <class KernelFunctorT>
-struct KernelLauncher {
+struct KernelLauncher {  // TODO: derived from Module (?)
+
   struct kernel_launcher_manual_feature {};
 
   KernelAttrsRT rt_attrs;

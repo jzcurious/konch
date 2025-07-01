@@ -4,78 +4,70 @@
 #include "konch/index/index_type.hpp"
 #include "konch/view/view_kind.hpp"  // IWYU pragma: export
 
+#include <array>
+
 namespace konch {
 
-template <index_t num_axis>
+template <index_t... _sizes>
 class TensorView final {
  public:
   struct view_manual_feature {};
 
-  const index_t naxis = num_axis;
+  static constexpr const index_t naxis = sizeof...(_sizes);
+  static constexpr const std::array<index_t, naxis> sizes = {_sizes...};
 
  private:
-  index_t sizes_[num_axis];
-  index_t strides_[num_axis];
+  static constexpr const auto strides_ = [] {
+    std::array<index_t, naxis> result{};
+
+    index_t stride = 1;
+    result[naxis - 1] = 1;
+
+    for (index_t axis = naxis - 1; axis > 0; --axis)
+      result[axis - 1] = (stride *= sizes[axis]);
+
+    return result;
+  }();
 
  public:
   template <IndexType... SizeT>
-  __host__ TensorView(SizeT... sizes) {
-    // TODO: check the ctor
+  __host__ TensorView(SizeT... sizes) {}
 
-    static_assert(sizeof...(sizes) == num_axis,
-        "Number of axes must match the number of arguments.");
-
-    index_t axis = 0;
-    ((sizes_[axis] = sizes, ++axis), ...);
-
-    index_t stride = 1;
-#pragma unroll
-    for (index_t axis = num_axis - 1; axis > 0; --axis) {
-      strides_[axis - 1] = stride;
-      stride *= sizes_[axis];
-    }
+  __host__ __device__ index_t size(index_t axis = 0) const {
+    return axis < naxis ? sizes[axis] : 0;
   }
 
   template <IndexType... IndexT>
   __host__ __device__ index_t operator()(IndexT... indices) const {
-    // TODO: check the shit
-
-    static_assert(sizeof...(indices) == num_axis,
+    static_assert(sizeof...(indices) == naxis,
         "Number of axes must match the number of arguments.");
 
     index_t address = 0;
     index_t axis = 0;
 
-    ((address += ring(indices, sizes_[axis]) * strides_[axis], ++axis), ...);
+    ((address += ring(indices, sizes[axis]) * strides_[axis], ++axis), ...);
     return address;
   }
 
-  __host__ __device__ index_t size(index_t axis = 0) const {
-    return axis < naxis ? sizes_[axis] : 0;
-  }
-
-  template <index_t _num_axis>
-  __host__ __device__ bool operator==(const TensorView<_num_axis>& view) const {
-    if constexpr (_num_axis != num_axis)
-      return false;
-    else {
-      for (index_t axis = 0; axis < naxis; ++axis)
-        if (view.sizes_[axis] != this->sizes_[axis]) return false;
-
-      return true;
-    }
+  template <ViewKind ViewT>
+  __host__ __device__ bool operator==(ViewT) const {
+    return std::is_same_v<TensorView, ViewT>;
   }
 };
 
-template <IndexType... SizeT>
-TensorView(SizeT...) -> TensorView<sizeof...(SizeT)>;
+template <auto... sizes>
+TensorView(decltype(sizes)...) -> TensorView<sizes...>;
 
-template <index_t num_axis>
-using View = TensorView<num_axis>;
+template <auto... sizes>
+using View = TensorView<sizes...>;
 
 using ScalarView = TensorView<0>;
-using VectorView = TensorView<1>;
-using MatrixView = TensorView<2>;
+
+template <index_t len>
+using VectorView = TensorView<len>;
+
+template <index_t mrows, index_t ncols>
+using MatrixView = TensorView<mrows, ncols>;
 
 }  // namespace konch
 
