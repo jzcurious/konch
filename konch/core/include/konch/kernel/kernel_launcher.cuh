@@ -2,6 +2,7 @@
 #define _KONCH_KERNEL_LAUNCHER_
 
 #include "konch/kernel/kernel.cuh"  // IWYU pragma: keep
+#include "konch/kernel/kernel_launcher_kind.hpp"  // IWYU pragma: export
 #include "konch/kernel/kernel_rt_attrs.hpp"
 
 namespace konch {

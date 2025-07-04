@@ -8,13 +8,15 @@
 
 namespace konch {
 
-template <index_t... _sizes>
+template <PositiveIndex auto... _sizes>
 class TensorView final {
  public:
   struct view_manual_feature {};
 
   static constexpr const index_t naxis = sizeof...(_sizes);
   static constexpr const std::array<index_t, naxis> sizes = {_sizes...};
+  static constexpr const bool is_scalar = naxis == 0;
+  static constexpr const index_t numel = is_scalar ? 1 : (_sizes * ...);
 
  private:
   static constexpr const auto strides_ = [] {
@@ -34,7 +36,11 @@ class TensorView final {
   __host__ TensorView(SizeT... sizes) {}
 
   __host__ __device__ index_t size(index_t axis = 0) const {
-    return axis < naxis ? sizes[axis] : 0;
+    if constexpr (is_scalar) {
+      return 0;
+    } else {
+      return axis < naxis ? sizes[axis] : 0;
+    }
   }
 
   template <IndexType... IndexT>
@@ -42,26 +48,30 @@ class TensorView final {
     static_assert(sizeof...(indices) == naxis,
         "Number of axes must match the number of arguments.");
 
-    index_t address = 0;
-    index_t axis = 0;
+    if constexpr (is_scalar) {
+      return 0;
+    } else {
+      index_t address = 0;
+      index_t axis = 0;
 
-    ((address += ring(indices, sizes[axis]) * strides_[axis], ++axis), ...);
-    return address;
+      ((address += ring(indices, sizes[axis]) * strides_[axis], ++axis), ...);
+      return address;
+    }
   }
 
   template <ViewKind ViewT>
-  __host__ __device__ bool operator==(ViewT) const {
+  __host__ __device__ bool operator==(const ViewT&) const {
     return std::is_same_v<TensorView, ViewT>;
   }
 };
 
-template <auto... sizes>
+template <PositiveIndex auto... sizes>
 TensorView(decltype(sizes)...) -> TensorView<sizes...>;
 
-template <auto... sizes>
+template <PositiveIndex auto... sizes>
 using View = TensorView<sizes...>;
 
-using ScalarView = TensorView<0>;
+using ScalarView = TensorView<>;
 
 template <index_t len>
 using VectorView = TensorView<len>;

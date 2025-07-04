@@ -1,8 +1,8 @@
 #ifndef _KONCH_MODULE_JOINT_
 #define _KONCH_MODULE_JOINT_
 
+#include "konch/module/module_joint_kind.hpp"
 #include "konch/tensor/tensor.cuh"
-#include "konch/view/view.cuh"
 
 #include <functional>
 #include <tuple>
@@ -17,22 +17,56 @@ template <class T>
 concept ModuleJointModeKind
     = std::is_same_v<T, module_input> or std::is_same_v<T, module_output>;
 
-template <ModuleJointModeKind ModeT, AtomKind AtomT, ViewKind... ViewT>
+template <ModuleJointModeKind ModeT, TensorKind... TensorT>
 struct ModuleJoint {
   struct module_joint_manual_feature {};
 
   using mode_t = ModeT;
-  using atom_t = AtomT;
-  using view_t = ViewsTypeList<ViewT...>;
+  using view_t = ViewsTypeList<typename TensorT::view_t...>;
+  using value_t = std::tuple<std::reference_wrapper<TensorT>...>;
 
-  std::tuple<std::reference_wrapper<ViewT>...> value;
+  value_t value;
+
+  void set(const TensorT&... tensor) {
+    static_assert(std::is_same_v<mode_t, module_input>, "");  // TODO: add message
+    std::tie(value) = std::tie(tensor...);  // PROBLEM: type miss
+  }
+
+  void set(TensorT&... tensor) {
+    static_assert(std::is_same_v<mode_t, module_output>, "");  // TODO: add message
+    std::tie(value) = std::tie(tensor...);
+  }
+
+  void set(const ModuleJoint& joint) {
+    static_assert(std::is_same_v<mode_t, module_input>, "");  // TODO: add message
+    std::tie(value) = std::tie(joint.value);
+  }
+
+  void set(ModuleJoint& joint) {
+    static_assert(std::is_same_v<mode_t, module_input>, "");  // TODO: add message
+    std::tie(value) = std::tie(joint.value);
+  }
+
+  template <ModuleJointKind ModuleJointT>
+  bool operator==(const ModuleJointT&) const {
+    return std::is_same_v<ModuleJoint, ModuleJointT>;
+  }
+
+  template <ModuleJointKind ModuleJointT>
+  bool check_compatibility(ModuleJointT) {
+    if constexpr (std::is_same_v<typename ModuleJointT::mode_t, mode_t>) {
+      return false;
+    } else {
+      return std::is_same_v<typename ModuleJointT::value_t, value_t>;
+    }
+  }
 };
 
-template <AtomKind AtomT, ViewKind... ViewT>
-using ModuleInput = ModuleJoint<module_input, AtomT, ViewT...>;
+template <TensorKind... TensorT>
+using ModuleInput = ModuleJoint<module_input, TensorT...>;
 
-template <AtomKind AtomT, ViewKind... ViewT>
-using ModuleOutput = ModuleJoint<module_output, AtomT, ViewT...>;
+template <TensorKind... TensorT>
+using ModuleOutput = ModuleJoint<module_output, TensorT...>;
 
 template <class T>
 concept ModuleInputKind

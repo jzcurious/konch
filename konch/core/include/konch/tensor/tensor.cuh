@@ -1,44 +1,62 @@
-#ifndef _KONCH_OBJECT_
-#define _KONCH_OBJECT_
+#ifndef _KONCH_TENSOR_
+#define _KONCH_TENSOR_
 
 #include "konch/accessor/accessor.cuh"
 #include "konch/atom/atom_kind.hpp"
 #include "konch/block/block.cuh"
+#include "konch/tensor/tensor_kind.hpp"  // IWYU pragma: export
 #include "konch/view/view.cuh"
 
 namespace konch {
 
-template <index_t naxis, AtomKind AtomT = float>
+template <AtomKind AtomT, ViewKind ViewT>
 class Tensor {
  public:
-  using ViewT = TensorView<naxis>;
+  using atom_t = AtomT;
+  using view_t = ViewT;
 
  private:
   Block<AtomT> block_;
-  Accessor<AtomT, ViewT> accessor_;
+  Accessor<AtomT, view_t> accessor_;
 
  public:
-  template <IndexType... SizeT>
-  __host__ Tensor(SizeT... sizes)
-      : block_((sizes * ...))
-      , accessor_(block_.data(), ViewT(sizes...)) {}
+  Tensor()
+      : block_(view_t::numel)
+      , accessor_(block_.data(), view_t()) {}
 
-  ViewT& view() const {
+  Tensor(PositiveIndex auto...)
+      : block_(view_t::numel)
+      , accessor_(block_.data(), view_t()) {}
+
+  template <AtomKind _AtomT, ViewKind _ViewT>
+  static Tensor make() {
+    return Tensor<_AtomT, _ViewT>();
+  }
+
+  template <AtomKind _AtomT, PositiveIndex auto... sizes>
+  static Tensor make() {
+    return Tensor<_AtomT, TensorView<sizes...>>();
+  }
+
+  view_t& view() const {
     return accessor_.view;
   }
 
-  Accessor<AtomT, ViewT>& accessor() {
+  Accessor<AtomT, view_t>& accessor() {
     return accessor_;
   }
 
-  const Accessor<AtomT, ViewT>& accessor() const {
+  const Accessor<AtomT, view_t>& accessor() const {
+    return accessor_;
+  }
+
+  operator Accessor<AtomT, view_t>() {
     return accessor_;
   }
 };
 
-template <IndexType... SizeT>
-Tensor(SizeT...) -> Tensor<sizeof...(SizeT)>;
+Tensor(PositiveIndex auto... sizes) -> Tensor<float, TensorView<sizes...>>;
 
 }  // namespace konch
 
-#endif  // _KONCH_OBJECT_
+#endif  // _KONCH_TENSOR_
