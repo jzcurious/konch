@@ -1,10 +1,10 @@
 #ifndef _KONCH_MODULE_JOINT_
 #define _KONCH_MODULE_JOINT_
 
-#include "konch/module/module_joint_kind.hpp"
-#include "konch/tensor/tensor.cuh"
+#include "../tensor/tensor.cuh"
 
-#include <functional>
+#include "./module_joint_kind.hpp"
+
 #include <tuple>
 
 namespace konch {
@@ -23,28 +23,29 @@ struct ModuleJoint {
 
   using mode_t = ModeT;
   using view_t = ViewsTypeList<typename TensorT::view_t...>;
-  using value_t = std::tuple<std::reference_wrapper<TensorT>...>;
+  using value_t = std::tuple<const TensorT*...>;
+
+  static constexpr const bool is_input = std::is_same_v<mode_t, module_input>;
+  static constexpr const bool is_output = std::is_same_v<mode_t, module_output>;
 
   value_t value;
 
   void set(const TensorT&... tensor) {
-    static_assert(std::is_same_v<mode_t, module_input>, "");  // TODO: add message
-    std::tie(value) = std::tie(tensor...);  // PROBLEM: type miss
-  }
-
-  void set(TensorT&... tensor) {
-    static_assert(std::is_same_v<mode_t, module_output>, "");  // TODO: add message
-    std::tie(value) = std::tie(tensor...);
+    value = std::forward_as_tuple(&tensor...);
   }
 
   void set(const ModuleJoint& joint) {
-    static_assert(std::is_same_v<mode_t, module_input>, "");  // TODO: add message
-    std::tie(value) = std::tie(joint.value);
+    value = joint.value;
   }
 
-  void set(ModuleJoint& joint) {
-    static_assert(std::is_same_v<mode_t, module_input>, "");  // TODO: add message
-    std::tie(value) = std::tie(joint.value);
+  const ModuleJoint& operator()(const TensorT&... tensor) {
+    this->set(tensor...);
+    return *this;
+  }
+
+  const ModuleJoint& operator=(const ModuleJoint& joint) {
+    this->set(joint);
+    return *this;
   }
 
   template <ModuleJointKind ModuleJointT>
@@ -53,11 +54,17 @@ struct ModuleJoint {
   }
 
   template <ModuleJointKind ModuleJointT>
-  bool check_compatibility(ModuleJointT) {
-    if constexpr (std::is_same_v<typename ModuleJointT::mode_t, mode_t>) {
-      return false;
+  constexpr bool check_compatibility(ModuleJointT) {
+    if (std::is_same_v<typename ModuleJointT::mode_t, mode_t>) return false;
+    return std::is_same_v<typename ModuleJointT::value_t, value_t>;
+  }
+
+  template <ModuleJointKind ModuleJointT>
+  void link(ModuleJointT& other_joint) {
+    if constexpr (is_input) {
+      set(other_joint.value);
     } else {
-      return std::is_same_v<typename ModuleJointT::value_t, value_t>;
+      other_joint.set(value);
     }
   }
 };
@@ -70,11 +77,19 @@ using ModuleOutput = ModuleJoint<module_output, TensorT...>;
 
 template <class T>
 concept ModuleInputKind
-    = ModuleJointModeKind<T> and std::is_same_v<typename T::mode_t, module_input>;
+    = ModuleJointKind<T> and std::is_same_v<typename T::mode_t, module_input>;
 
 template <class T>
 concept ModuleOutputKind
-    = ModuleJointModeKind<T> and std::is_same_v<typename T::mode_t, module_output>;
+    = ModuleJointKind<T> and std::is_same_v<typename T::mode_t, module_output>;
+
+template <class T>
+concept ModuleInputRefKind
+    = std::is_reference_v<T> and ModuleInputKind<std::remove_reference_t<T>>;
+
+template <class T>
+concept ModuleOutputRefKind
+    = std::is_reference_v<T> and ModuleOutputKind<std::remove_reference_t<T>>;
 
 }  // namespace konch
 

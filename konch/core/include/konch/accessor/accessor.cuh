@@ -1,10 +1,11 @@
 #ifndef _KONCH_ACCESSOR_
 #define _KONCH_ACCESSOR_
 
-#include "konch/accessor/accessor_kind.hpp"  // IWYU pragma: export
-#include "konch/atom/atom_kind.hpp"
-#include "konch/index/index_type.hpp"
-#include "konch/view/view_kind.hpp"
+#include "../atom/atom_kind.hpp"
+#include "../index/index_type.hpp"
+#include "../view/view_kind.hpp"
+
+#include "./accessor_kind.hpp"  // IWYU pragma: export
 
 namespace konch {
 
@@ -17,6 +18,7 @@ class Accessor final {
   struct accessor_manual_feature {};
 
   using atom_t = AtomT;
+  using accessor_t = Accessor<AtomT, ViewT>;
 
   const ViewT view;
 

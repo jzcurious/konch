@@ -1,7 +1,7 @@
 #ifndef _KONCH_BLOCK_
 #define _KONCH_BLOCK_
 
-#include "konch/atom/atom_kind.hpp"
+#include "../atom/atom_kind.hpp"
 
 #include <cuda_runtime.h>
 

@@ -1,8 +1,8 @@
 #ifndef _KONCH_MODULE_STATE_
 #define _KONCH_MODULE_STATE_
 
-#include "konch/module/module_state_kind.hpp"  // IWYU pragma: export
-#include "konch/tensor/tensor.cuh"
+#include "../module/module_state_kind.hpp"  // IWYU pragma: export
+#include "../tensor/tensor.cuh"
 
 #include <tuple>
 
@@ -13,7 +13,7 @@ struct ModuleState {
   struct module_state_manual_feature {};
 
   using view_t = ViewsTypeList<typename TensorT::view_t...>;
-  using value_t = std::tuple<std::reference_wrapper<TensorT>...>;
+  using value_t = std::tuple<TensorT...>;
 
   value_t value;
 

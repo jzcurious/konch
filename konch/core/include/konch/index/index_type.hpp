@@ -9,12 +9,10 @@ namespace konch {
 using index_t = std::uint32_t;
 
 template <class T>
-concept IndexType = std::is_same_v<index_t, T>;
+concept IndexType = std::is_convertible_v<T, index_t>;
 
-template <class T>
-concept PositiveIndex = IndexType<T> and requires(T x) {
-  { x > 0 } -> std::same_as<bool>;
-};
+template <auto x>
+concept PositiveIndex = IndexType<decltype(x)> and x > 0;
 
 }  // namespace konch
 

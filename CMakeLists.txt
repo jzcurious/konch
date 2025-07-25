@@ -1,9 +1,10 @@
 cmake_minimum_required(VERSION 3.24)
-project(konch_bundle LANGUAGES CXX)
+project(konch_bundle LANGUAGES CUDA)
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+include(cmake/cuda_compile_commands.cmake)
 
 add_subdirectory(konch)
+add_subdirectory(samples)
 # add_subdirectory(tests)
 # add_subdirectory(benchmarks)
 

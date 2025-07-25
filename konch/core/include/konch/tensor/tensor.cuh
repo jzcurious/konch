@@ -1,19 +1,25 @@
 #ifndef _KONCH_TENSOR_
 #define _KONCH_TENSOR_
 
-#include "konch/accessor/accessor.cuh"
-#include "konch/atom/atom_kind.hpp"
-#include "konch/block/block.cuh"
-#include "konch/tensor/tensor_kind.hpp"  // IWYU pragma: export
-#include "konch/view/view.cuh"
+#include "../accessor/accessor.cuh"
+#include "../atom/atom_kind.hpp"
+#include "../block/block.cuh"
+#include "../view/view.cuh"
+
+#include "./tensor_kind.hpp"  // IWYU pragma: export
+
+// TODO: add Matrix, Vector and Scalar
 
 namespace konch {
 
-template <AtomKind AtomT, ViewKind ViewT>
+template <AtomKind AtomT, index_t... sizes>
 class Tensor {
  public:
+  struct tensor_manual_feature {};
+
   using atom_t = AtomT;
-  using view_t = ViewT;
+  using view_t = View<sizes...>;
+  using accessor_t = Accessor<AtomT, view_t>;
 
  private:
   Block<AtomT> block_;
@@ -21,22 +27,8 @@ class Tensor {
 
  public:
   Tensor()
-      : block_(view_t::numel)
+      : block_(view_t::numel_ct)
       , accessor_(block_.data(), view_t()) {}
-
-  Tensor(PositiveIndex auto...)
-      : block_(view_t::numel)
-      , accessor_(block_.data(), view_t()) {}
-
-  template <AtomKind _AtomT, ViewKind _ViewT>
-  static Tensor make() {
-    return Tensor<_AtomT, _ViewT>();
-  }
-
-  template <AtomKind _AtomT, PositiveIndex auto... sizes>
-  static Tensor make() {
-    return Tensor<_AtomT, TensorView<sizes...>>();
-  }
 
   view_t& view() const {
     return accessor_.view;
@@ -55,7 +47,7 @@ class Tensor {
   }
 };
 
-Tensor(PositiveIndex auto... sizes) -> Tensor<float, TensorView<sizes...>>;
+// TODO: add generic tensor
 
 }  // namespace konch
 
