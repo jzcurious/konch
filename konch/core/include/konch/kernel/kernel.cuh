@@ -3,10 +3,10 @@
 
 #include "../accessor/accessor_kind.hpp"  // IWYU pragma: keep
 #include "../index/index_type.hpp"  // IWYU pragma: export
-#include "./kernel_config.hpp"  // IWYU pragma: keep
+#include "./kernel_config_kind.hpp"  // IWYU pragma: keep
 
-#define __kernel__                                                                       \
-  template <konch::KernelConfigKind auto config>                                         \
+#define __kernel(expected_config_kind)                                                   \
+  template <expected_config_kind config>                                                 \
   __global__
 
 #define AutoAccessor AccessorKind auto

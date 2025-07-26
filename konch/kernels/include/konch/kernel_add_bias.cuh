@@ -12,7 +12,7 @@ __kernel__ void add_bias(AutoAccessor y, const AutoAccessor x, const AutoAccesso
   if (i < x.size(0) and j < x.size(1)) y(i, j) = x(i, j) + b[j];
 }
 
-KONCH_REGISTER_KERNEL_LAUNCHER(KernelAddBiasLauncher, add_bias);
+KONCH_REGISTER_KERNEL_LAUNCHER(KernelAddBiasLauncher, add_bias, KernelConfig);
 
 }  // namespace konch
 
