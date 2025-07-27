@@ -6,18 +6,12 @@
 namespace konch {
 
 template <class T>
-concept InferenceModuleKind
-    = ModuleInputKind<typename T::input_t> and ModuleOutputKind<typename T::output_t>
-      and requires(T x) {
-            { x.input() } -> ModuleInputRefKind;
-            { x.output() } -> ModuleOutputRefKind;
-            { x.forward() } -> ModuleOutputRefKind;
-          };
-
-template <class T>
-concept ModuleKind = InferenceModuleKind<T> and requires(T x) {
-  { x.backward() } -> ModuleOutputRefKind;
-};
+concept ModuleKind = ModuleInputKind<typename T::input_t>
+                     and ModuleOutputKind<typename T::output_t> and requires(T x) {
+                           { x.input } -> ModuleInputRefKind;
+                           { x.output } -> ModuleOutputRefKind;
+                           { x.forward() } -> ModuleOutputRefKind;
+                         };
 
 }  // namespace konch
 

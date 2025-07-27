@@ -6,19 +6,25 @@
 namespace konch {
 
 template <ModuleInputKind InputT, ModuleOutputKind OutputT>
-class Module {
- public:
+struct Module {
   using input_t = InputT;
   using output_t = OutputT;
+
+  InputT input;
+  OutputT output;
+
+  output_t& forward() {
+    return output;
+  }
+
+  const output_t& forward() const {
+    return output;
+  }
 };
 
 }  // namespace konch
 
 #define KONCH_REGISTER_MODULE(module_type)                                               \
-  static_assert(ModuleKind<module_type>, "Type must satisfy ModuleKind");
-
-#define KONCH_REGISTER_INFERENCE_MODULE(module_type)                                     \
-  static_assert(                                                                         \
-      InferenceModuleKind<module_type>, "Type must satisfy InferenceModuleKind");
+  static_assert(ModuleKind<module_type>, "Type must satisfy ModuleKind.");
 
 #endif  // _KONCH_MODULE_MODULE_
