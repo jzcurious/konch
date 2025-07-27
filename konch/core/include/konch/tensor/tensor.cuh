@@ -45,6 +45,10 @@ class Tensor {
   operator Accessor<AtomT, view_t>() {
     return accessor_;
   }
+
+  operator const Accessor<AtomT, view_t>() const {
+    return accessor_;
+  }
 };
 
 // TODO: add generic tensor

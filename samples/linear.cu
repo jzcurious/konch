@@ -1,4 +1,5 @@
 #include <konch/core.cuh>
+#include <konch/kernel_add_bias.cuh>
 #include <konch/kernel_matmul_wmma.cuh>
 
 using namespace konch;
@@ -13,6 +14,7 @@ class Linear {
   input_t input_;
   output_t output_;
 
+  // TODO: Initialize weights and biases
   Tensor<AtomT, k, n> w_;
   Tensor<AtomT, n> b_;
   Tensor<AtomT, m, n> y_;
@@ -29,15 +31,22 @@ class Linear {
   const output_t& forward() {
     auto [x] = input_.value;
 
-    KernelMatmulWMMALauncher::launch<MatmulWMMAKernelConfigDefault>(
-        y_.accessor(), x->accessor(), w_.accessor());  // TODO: store config to launcher
+    KernelMatmulWMMALauncher::launch<MatmulWMMAConfig{
+        .block = {16, 16},
+        .grid = {grid_cover_by_axis(n, 16), grid_cover_by_axis(m, 16)}
+    }>(y_, *x, w_);
 
-    // KernelMatmulWMMALauncher::launch<kernel_matmul_wmma_config_t(m, n)>(
-    //     y_.accessor(), x->accessor(), w_.accessor());  // TODO: store config to
-    //     launcher
+    // Seems like NVCC doesn't support this syntax yet (C++20).
+    //
+    // ```
+    // KernelMatmulWMMALauncher::launch<{
+    //     .block = {16, 16},
+    //     .grid = {grid_cover_by_axis(n, 16), grid_cover_by_axis(m, 16)}
+    // }>(y_, *x, w_);
+    // ```
 
-    // KernelMatmulWMMALauncher::launch<kernel_matmul_wmma_config_t(m, n)>(
-    //     y_, *x, w_);  // TODO: store config to launcher
+    KernelAddBiasLauncher::launch<AddBiasConfig{
+        .block = {128}, .grid = {grid_cover_by_axis(n, 128)}}>(y_, y_, b_);
 
     return output_(y_);
   }
@@ -45,7 +54,7 @@ class Linear {
 
 using Linear1 = Linear<half, 256, 128, 64>;
 
-static_assert(InferenceModuleKind<Linear1>);
+KONCH_REGISTER_INFERENCE_MODULE(Linear1);
 
 int main() {
   Linear1 linear;
@@ -53,5 +62,7 @@ int main() {
   linear.input().set(x);
   linear.forward();
 
-  // auto [y] = linear.output().value;
+  auto [y] = linear.output().value;
+
+  // ...
 }

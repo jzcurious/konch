@@ -3,16 +3,28 @@
 
 #include <konch/core.cuh>
 
+struct AddBiasConfig {
+  /* This class is intentionally defined outside the 'konch' namespace. This is required
+   * for proper cudafe stub generation. */
+
+  dim3 block;
+  dim3 grid;
+  std::size_t shmem = 0;
+  cudaStream_t stream = 0;
+};
+
 namespace konch {
 
-__kernel__ void add_bias(AutoAccessor y, const AutoAccessor x, const AutoAccessor b) {
+__kernel(AddBiasConfig) void add_bias(
+    AutoAccessor y, const AutoAccessor x, const AutoAccessor b) {
+
   index_t i = blockDim.y * blockIdx.y + threadIdx.y;
   index_t j = blockDim.x * blockIdx.x + threadIdx.x;
 
-  if (i < x.size(0) and j < x.size(1)) y(i, j) = x(i, j) + b[j];
+  if (i < x.view.size(0) and j < x.view.size(1)) y(i, j) = x(i, j) + b[j];
 }
 
-KONCH_REGISTER_KERNEL_LAUNCHER(KernelAddBiasLauncher, add_bias, KernelConfig);
+KONCH_REGISTER_KERNEL_LAUNCHER(KernelAddBiasLauncher, add_bias, AddBiasConfig);
 
 }  // namespace konch
 
