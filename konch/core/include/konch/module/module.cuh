@@ -3,28 +3,40 @@
 
 #include "./module_kind.hpp"  // IWYU pragma: export
 
-namespace konch {
+namespace konch::internal {
 
 template <ModuleInputKind InputT, ModuleOutputKind OutputT>
-struct Module {
+struct ModuleBase {
   using input_t = InputT;
   using output_t = OutputT;
 
   InputT input;
   OutputT output;
 
-  output_t& forward() {
-    return output;
-  }
-
-  const output_t& forward() const {
+  output_t& operator()() {
     return output;
   }
 };
 
-}  // namespace konch
+}  // namespace konch::internal
 
-#define KONCH_REGISTER_MODULE(module_type)                                               \
-  static_assert(ModuleKind<module_type>, "Type must satisfy ModuleKind.");
+namespace konch {
+
+template <TensorKind... TensorT>
+using I = ModuleInput<TensorT...>;
+
+template <TensorKind... TensorT>
+using O = ModuleOutput<TensorT...>;
+
+template <TensorKind... TensorT>
+using IO = ModuleInput<TensorT...>;
+
+template <ModuleInputKind InputT, class OutputT = void>
+struct Module : internal::ModuleBase<InputT,
+                    std::conditional_t<std::is_void_v<OutputT>,
+                        typename InputT::compliment_t,
+                        OutputT>> {};
+
+}  // namespace konch
 
 #endif  // _KONCH_MODULE_MODULE_

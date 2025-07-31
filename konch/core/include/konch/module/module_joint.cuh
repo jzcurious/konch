@@ -22,11 +22,14 @@ struct ModuleJoint {
   struct module_joint_manual_feature {};
 
   using mode_t = ModeT;
-  using view_t = ViewsTypeList<typename TensorT::view_t...>;
   using value_t = std::tuple<const TensorT*...>;
 
-  static constexpr const bool is_input = std::is_same_v<mode_t, module_input>;
-  static constexpr const bool is_output = std::is_same_v<mode_t, module_output>;
+  template <index_t index>
+  using tensor_t = std::remove_pointer_t<typename std::tuple_element_t<index, value_t>>;
+
+  using compliment_t = std::conditional_t<std::is_same_v<mode_t, module_input>,
+      ModuleJoint<module_output, TensorT...>,
+      ModuleJoint<module_input, TensorT...>>;
 
   value_t value;
 
@@ -34,7 +37,7 @@ struct ModuleJoint {
     value = std::forward_as_tuple(&tensor...);
   }
 
-  void set(const ModuleJoint& joint) {
+  void set(const ModuleJointKind auto& joint) {
     value = joint.value;
   }
 
@@ -43,29 +46,18 @@ struct ModuleJoint {
     return *this;
   }
 
-  const ModuleJoint& operator=(const ModuleJoint& joint) {
+  const ModuleJoint& operator()(const ModuleJointKind auto& joint) {
     this->set(joint);
     return *this;
   }
 
-  template <ModuleJointKind ModuleJointT>
-  bool operator==(const ModuleJointT&) const {
-    return std::is_same_v<ModuleJoint, ModuleJointT>;
+  const ModuleJoint& operator=(const ModuleJointKind auto& joint) {
+    this->set(joint);
+    return *this;
   }
 
-  template <ModuleJointKind ModuleJointT>
-  constexpr bool check_compatibility(ModuleJointT) {
-    if (std::is_same_v<typename ModuleJointT::mode_t, mode_t>) return false;
-    return std::is_same_v<typename ModuleJointT::value_t, value_t>;
-  }
-
-  template <ModuleJointKind ModuleJointT>
-  void link(ModuleJointT& other_joint) {
-    if constexpr (is_input) {
-      set(other_joint.value);
-    } else {
-      other_joint.set(value);
-    }
+  const ModuleJoint<module_input, TensorT...> to_input() const {
+    return ModuleJoint<module_input, TensorT...>(value);
   }
 };
 
@@ -75,6 +67,12 @@ using ModuleInput = ModuleJoint<module_input, TensorT...>;
 template <TensorKind... TensorT>
 using ModuleOutput = ModuleJoint<module_output, TensorT...>;
 
+template <TensorKind... TensorT>
+using Input = ModuleJoint<module_input, TensorT...>;
+
+template <TensorKind... TensorT>
+using Output = ModuleJoint<module_output, TensorT...>;
+
 template <class T>
 concept ModuleInputKind
     = ModuleJointKind<T> and std::is_same_v<typename T::mode_t, module_input>;
@@ -82,14 +80,6 @@ concept ModuleInputKind
 template <class T>
 concept ModuleOutputKind
     = ModuleJointKind<T> and std::is_same_v<typename T::mode_t, module_output>;
-
-template <class T>
-concept ModuleInputRefKind
-    = std::is_reference_v<T> and ModuleInputKind<std::remove_reference_t<T>>;
-
-template <class T>
-concept ModuleOutputRefKind
-    = std::is_reference_v<T> and ModuleOutputKind<std::remove_reference_t<T>>;
 
 }  // namespace konch
 
