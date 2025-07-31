@@ -33,31 +33,22 @@ struct ModuleJoint {
 
   value_t value;
 
-  void set(const TensorT&... tensor) {
-    value = std::forward_as_tuple(&tensor...);
-  }
-
-  void set(const ModuleJointKind auto& joint) {
-    value = joint.value;
-  }
-
   const ModuleJoint& operator()(const TensorT&... tensor) {
-    this->set(tensor...);
+    value = std::forward_as_tuple(&tensor...);
     return *this;
   }
 
-  const ModuleJoint& operator()(const ModuleJointKind auto& joint) {
-    this->set(joint);
+  template <ModuleJointKind JointT>
+  const ModuleJoint& operator()(const JointT& joint) {
+    if constexpr (std::is_same_v<ModuleJoint, JointT>)
+      value = joint.value;
+    else
+      value = static_cast<ModuleJoint>(joint).value;
     return *this;
   }
 
-  const ModuleJoint& operator=(const ModuleJointKind auto& joint) {
-    this->set(joint);
-    return *this;
-  }
-
-  const ModuleJoint<module_input, TensorT...> to_input() const {
-    return ModuleJoint<module_input, TensorT...>(value);
+  operator const compliment_t() const {
+    return compliment_t(value);
   }
 };
 

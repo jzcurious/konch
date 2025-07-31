@@ -50,7 +50,7 @@ struct Chain : Module<typename internal::first_type_t<ModuleT...>::input_t,
     (
         [&]() {
           if constexpr (Index > 0) {
-            std::get<Index>(modules)(std::get<Index - 1>(modules).output.to_input());
+            std::get<Index>(modules)(std::get<Index - 1>(modules).output);
           } else {
             std::get<0>(modules)(this->input);
           }
