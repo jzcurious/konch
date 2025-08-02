@@ -2,7 +2,6 @@
 #define _MODULE_KIND_
 
 #include "./joint.cuh"
-#include "./parameters_kind.cuh"
 
 namespace konch::internal {
 
@@ -25,7 +24,7 @@ concept ModuleKind = ModuleInputKind<typename T::input_t>
                            { x.output } -> internal::ModuleOutputRefKind;
                          } and requires(T x, const typename T::input_t& args) {
                            { x(args) } -> internal::ModuleOutputRefKind;
-                         };
+                         } and requires { typename T::parameters_t; };
 
 template <class T>
 concept ChainModuleKind

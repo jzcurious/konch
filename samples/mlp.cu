@@ -12,6 +12,8 @@ struct Linear : Module<I<Tensor<AtomT, m, k>>, O<Tensor<AtomT, m, n>>> {
   Tensor<AtomT, n> b;
   Tensor<AtomT, m, n> y;
 
+  using parameters_t = std::tuple<decltype(w), decltype(b)>;
+
   const auto& operator()(const Linear::input_t& args) {
     this->input(args);
 
@@ -48,8 +50,6 @@ using LinearWithReLU = Chain<Linear<AtomT, m, n, k>, ReLU<AtomT, m, n>>;
 
 using MLP
     = Chain<LinearWithReLU<half, 256, 128, 512>, LinearWithReLU<half, 256, 64, 128>>;
-
-using LinearGradient = Gradient<Linear<half, 256, 128, 512>>;
 
 using MLPGradient = Gradient<MLP>;
 

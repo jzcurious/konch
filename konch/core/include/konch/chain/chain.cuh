@@ -34,7 +34,7 @@ struct Chain : Module<typename internal::first_type_t<ModuleT...>::input_t,
  public:
   struct chain_module_manual_feature {};
 
-  using submodules_t = std::tuple<ModuleT...>;
+  using parameters_t = std::tuple<typename ModuleT::parameters_t...>;
 
   std::tuple<ModuleT...> modules;
 
