@@ -15,12 +15,12 @@ struct Linear : Module<I<Tensor<AtomT, m, k>>, O<Tensor<AtomT, m, n>>> {
   const auto& operator()(const Linear::input_t& args) {
     this->input(args);
 
-    auto [x] = args.value;
+    auto [x] = args.values();
 
     KernelMatmulWMMALauncher::launch<MatmulWMMAConfig{
         .block = {16, 16},
         .grid = {grid_cover_by_axis(n, 16), grid_cover_by_axis(m, 16)}
-    }>(y, *x, w);
+    }>(y, x, w);
 
     KernelAddBiasLauncher::launch<AddBiasConfig{
         .block = {128}, .grid = {grid_cover_by_axis(n, 128)}}>(y, y, b);
@@ -34,12 +34,12 @@ struct ReLU : Module<IO<Tensor<AtomT, m, n>>> {
   const auto& operator()(const ReLU::input_t& args) {
     this->input(args);
 
-    auto [x] = args.value;
+    auto [x] = args.values();
 
     KernelReLULauncher::launch<ReLUConfig{
-        .block = {128}, .grid = {grid_cover_by_axis(n, 128)}}>(*x, *x);
+        .block = {128}, .grid = {grid_cover_by_axis(n, 128)}}>(x, x);
 
-    return this->output(*x);
+    return this->output(x);
   }
 };
 
@@ -49,12 +49,16 @@ using LinearWithReLU = Chain<Linear<AtomT, m, n, k>, ReLU<AtomT, m, n>>;
 using MLP
     = Chain<LinearWithReLU<half, 256, 128, 512>, LinearWithReLU<half, 256, 64, 128>>;
 
+using LinearGradient = Gradient<Linear<half, 256, 128, 512>>;
+
+using MLPGradient = Gradient<MLP>;
+
 int main() {
-  typename MLP::input_t::tensor_t<0> tensor;
+  typename MLP::input_t::tensor_t<0> x;
 
   MLP mlp;
 
-  auto y = mlp(tensor);
+  auto y = mlp(x);
 
   // ...
 }

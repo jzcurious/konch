@@ -3,7 +3,7 @@
 
 #include "../tensor/tensor.cuh"
 
-#include "./module_joint_kind.hpp"
+#include "./joint_kind.hpp"
 
 #include <tuple>
 
@@ -22,33 +22,49 @@ struct ModuleJoint {
   struct module_joint_manual_feature {};
 
   using mode_t = ModeT;
-  using value_t = std::tuple<const TensorT*...>;
+  using lines_t = std::tuple<const TensorT*...>;
 
   template <index_t index>
-  using tensor_t = std::remove_pointer_t<typename std::tuple_element_t<index, value_t>>;
+  using tensor_t = std::remove_pointer_t<typename std::tuple_element_t<index, lines_t>>;
 
   using compliment_t = std::conditional_t<std::is_same_v<mode_t, module_input>,
       ModuleJoint<module_output, TensorT...>,
       ModuleJoint<module_input, TensorT...>>;
 
-  value_t value;
+  lines_t lines;
+
+  ModuleJoint() = default;
+
+  ModuleJoint(const TensorT&... tensor)
+      : lines(std::forward_as_tuple(&tensor...)) {}
+
+  ModuleJoint(const TensorT*... tensor)
+      : lines(std::forward_as_tuple(tensor...)) {}
+
+  ModuleJoint(const lines_t& lines)
+      : lines(lines) {}
+
+  std::tuple<const TensorT&...> values() const {
+    return std::apply(
+        [](const auto*... ptrs) { return std::make_tuple(*ptrs...); }, lines);
+  }
 
   const ModuleJoint& operator()(const TensorT&... tensor) {
-    value = std::forward_as_tuple(&tensor...);
+    lines = std::forward_as_tuple(&tensor...);
     return *this;
   }
 
   template <ModuleJointKind JointT>
   const ModuleJoint& operator()(const JointT& joint) {
     if constexpr (std::is_same_v<ModuleJoint, JointT>)
-      value = joint.value;
+      lines = joint.lines;
     else
-      value = static_cast<ModuleJoint>(joint).value;
+      lines = static_cast<ModuleJoint>(joint).lines;
     return *this;
   }
 
   operator const compliment_t() const {
-    return compliment_t(value);
+    return compliment_t(lines);
   }
 };
 

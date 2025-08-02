@@ -32,15 +32,14 @@ struct Chain : Module<typename internal::first_type_t<ModuleT...>::input_t,
                    typename internal::last_type_t<ModuleT...>::output_t> {
 
  public:
+  struct chain_module_manual_feature {};
+
+  using submodules_t = std::tuple<ModuleT...>;
+
   std::tuple<ModuleT...> modules;
 
   const auto& operator()(const Chain::input_t& args) {
     this->input = args;
-    return this->output = compose_modules(std::make_index_sequence<sizeof...(ModuleT)>());
-  }
-
-  const auto& operator()(const TensorKind auto&... args) {
-    this->input(args...);
     return this->output = compose_modules(std::make_index_sequence<sizeof...(ModuleT)>());
   }
 

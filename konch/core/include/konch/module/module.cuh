@@ -9,12 +9,14 @@ template <ModuleInputKind InputT, ModuleOutputKind OutputT>
 struct ModuleBase {
   using input_t = InputT;
   using output_t = OutputT;
+  using parameters_t = std::tuple<>;
 
   InputT input;
   OutputT output;
 
-  output_t& operator()() {
-    return output;
+  const output_t& operator()(const ModuleBase::input_t& args) {
+    input(args);
+    return output(input);
   }
 };
 
