@@ -28,13 +28,12 @@ using last_type_t = typename last_type<ModuleT...>::type;
 namespace konch {
 
 template <ModuleKind... ModuleT>
+  requires(sizeof...(ModuleT) > 0)
 struct Chain : Module<typename internal::first_type_t<ModuleT...>::input_t,
                    typename internal::last_type_t<ModuleT...>::output_t> {
 
  public:
-  struct chain_module_manual_feature {};
-
-  std::tuple<ModuleT...> modules;
+  struct chain_manual_feature {};
 
   static constexpr const size_t len = sizeof...(ModuleT);
 
@@ -47,6 +46,7 @@ struct Chain : Module<typename internal::first_type_t<ModuleT...>::input_t,
   }
 
  private:
+  std::tuple<ModuleT...> modules_;
   std::tuple<typename ModuleT::output_t...> module_outputs_;
   std::tuple<typename ModuleT::input_t...> module_d_inputs_;
 
@@ -56,9 +56,9 @@ struct Chain : Module<typename internal::first_type_t<ModuleT...>::input_t,
         [&]() {
           if constexpr (Index > 0) {
             std::get<Index>(module_outputs_)
-                = std::get<Index>(modules).forward(std::get<Index - 1>(module_outputs_));
+                = std::get<Index>(modules_).forward(std::get<Index - 1>(module_outputs_));
           } else {
-            std::get<0>(module_outputs_) = std::get<0>(modules).forward(args);
+            std::get<0>(module_outputs_) = std::get<0>(modules_).forward(args);
           }
         }(),
         ...);
@@ -72,10 +72,10 @@ struct Chain : Module<typename internal::first_type_t<ModuleT...>::input_t,
     (
         [&]() {
           if constexpr (Index < len - 1) {
-            std::get<Index>(module_d_inputs_) = std::get<Index>(modules).backward(
+            std::get<Index>(module_d_inputs_) = std::get<Index>(modules_).backward(
                 std::get<Index + 1>(module_d_inputs_));
           } else {
-            std::get<Index>(module_d_inputs_) = std::get<Index>(modules).backward(args);
+            std::get<Index>(module_d_inputs_) = std::get<Index>(modules_).backward(args);
           }
         }(),
         ...);

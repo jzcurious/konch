@@ -8,12 +8,14 @@ using namespace konch;
 
 template <AtomKind AtomT, index_t m, index_t n, index_t k>
 struct Linear : Module<I<Tensor<AtomT, m, k>>, O<Tensor<AtomT, m, n>>> {
+ private:
   Parameter<AtomT, k, n> w;
   Parameter<AtomT, n> b;
 
   State<AtomT, m, n> y;
   State<AtomT, m, k> dx;
 
+ public:
   Linear::output_t forward(const Linear::input_t& args) {
     this->keep_input(args);
 
@@ -60,9 +62,11 @@ struct Linear : Module<I<Tensor<AtomT, m, k>>, O<Tensor<AtomT, m, n>>> {
 
 template <AtomKind AtomT, index_t m, index_t n>
 struct ReLU : Module<IO<Tensor<AtomT, m, n>>> {
+ private:
   State<AtomT, m, n> y;
   State<AtomT, m, n> dx;
 
+ public:
   ReLU::output_t forward(const ReLU::input_t& args) {
     auto [x] = args.values();
 
@@ -85,8 +89,6 @@ struct ReLU : Module<IO<Tensor<AtomT, m, n>>> {
     return dx;
   }
 };
-
-static_assert(ModuleKind<Linear<half, 32, 256, 512>>);
 
 // clang-format off
 using MLP = Chain<
