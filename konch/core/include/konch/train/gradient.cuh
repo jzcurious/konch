@@ -6,15 +6,16 @@
 namespace konch {
 
 template <ModuleKind ModuleT>
-struct Gradient {};
-
-template <AtomicModuleKind ModuleT>
-struct Gradient<ModuleT> {
+struct Gradient : Module<typename ModuleT::output_t::compliment_t,
+                      typename ModuleT::input_t::compliment_t> {
   struct gradient_manual_feature {};
 
-  using values_t = ModuleT::parameters_t;
+  ModuleT& module;
 
-  values_t values;
+  typename ModuleT::parameters_t d_params;
+
+  Gradient(ModuleT& module)
+      : module(module) {}
 };
 
 }  // namespace konch

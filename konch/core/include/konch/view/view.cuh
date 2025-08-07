@@ -17,31 +17,39 @@ class TensorView final {
   struct view_manual_feature {};
 
  public:
-  static constexpr const index_t naxis_ct = sizeof...(_sizes);
-  static constexpr const std::array<index_t, naxis_ct> sizes_ct = {_sizes...};
-  static constexpr const bool is_scalar_ct = naxis_ct == 0;
-  static constexpr const index_t numel_ct = is_scalar_ct ? 1 : (_sizes * ...);
+  struct ct {
+    static constexpr const index_t naxis = sizeof...(_sizes);
+    static constexpr const std::array<index_t, naxis> sizes = {_sizes...};
+    static constexpr const bool is_scalar = naxis == 0;
+    static constexpr const index_t numel = is_scalar ? 1 : (_sizes * ...);
 
-  static constexpr const auto strides_ct = [] {
-    std::array<index_t, naxis_ct> result{};
+    static constexpr const auto strides = [] {
+      std::array<index_t, naxis> result{};
 
-    index_t stride = 1;
-    result[naxis_ct - 1] = 1;
+      index_t stride = 1;
+      result[naxis - 1] = 1;
 
-    for (index_t axis = naxis_ct - 1; axis > 0; --axis)
-      result[axis - 1] = (stride *= sizes_ct[axis]);
+      for (index_t axis = naxis - 1; axis > 0; --axis)
+        result[axis - 1] = (stride *= sizes[axis]);
 
-    return result;
-  }();
+      return result;
+    }();
+  };
 
-  const index_t naxis = naxis_ct;
-  const index_t numel = numel_ct;
-  const std::array<index_t, naxis_ct> sizes = sizes_ct;
-  const bool is_scalar = is_scalar_ct;
-  const std::array<index_t, naxis_ct> strides = strides_ct;
+  const index_t naxis = ct::naxis;
+  const index_t numel = ct::numel;
+  const std::array<index_t, ct::naxis> sizes = ct::sizes;
+  const bool is_scalar = ct::is_scalar;
+  const std::array<index_t, ct::naxis> strides = ct::strides;
+
+  template <IndexType auto... new_order>
+    requires((PositiveIndex<_sizes> and ...) and sizeof...(new_order) == ct::naxis)
+  auto permute() const {
+    return TensorView<ct::sizes[new_order]...>();
+  }
 
   __host__ __device__ index_t size(index_t axis = 0) const {
-    if constexpr (is_scalar_ct) {
+    if constexpr (ct::is_scalar) {
       return 0;
     } else {
       return axis < naxis ? sizes[axis] : 0;
@@ -49,9 +57,9 @@ class TensorView final {
   }
 
   template <IndexType... IndexT>
-    requires(sizeof...(IndexT) == naxis_ct)
+    requires(sizeof...(IndexT) == ct::naxis)
   __host__ __device__ index_t operator()(IndexT... indices) const {
-    if constexpr (is_scalar_ct) {
+    if constexpr (ct::is_scalar) {
       return 0;
     } else {
       index_t address = 0;

@@ -34,29 +34,53 @@ struct Chain : Module<typename internal::first_type_t<ModuleT...>::input_t,
  public:
   struct chain_module_manual_feature {};
 
-  using parameters_t = std::tuple<typename ModuleT::parameters_t...>;
-
   std::tuple<ModuleT...> modules;
 
-  const auto& operator()(const Chain::input_t& args) {
-    this->input = args;
-    return this->output = compose_modules(std::make_index_sequence<sizeof...(ModuleT)>());
+  static constexpr const size_t len = sizeof...(ModuleT);
+
+  Chain::output_t forward(const Chain::input_t& args) {
+    return forward_compose(args, std::make_index_sequence<len>());
+  }
+
+  Chain::input_t backward(const Chain::output_t& args) {
+    return backward_compose(args, std::make_index_sequence<len>());
   }
 
  private:
+  std::tuple<typename ModuleT::output_t...> module_outputs_;
+  std::tuple<typename ModuleT::input_t...> module_d_inputs_;
+
   template <size_t... Index>
-  const auto& compose_modules(std::index_sequence<Index...>) {
+  const auto& forward_compose(const Chain::input_t& args, std::index_sequence<Index...>) {
     (
         [&]() {
           if constexpr (Index > 0) {
-            std::get<Index>(modules)(std::get<Index - 1>(modules).output);
+            std::get<Index>(module_outputs_)
+                = std::get<Index>(modules).forward(std::get<Index - 1>(module_outputs_));
           } else {
-            std::get<0>(modules)(this->input);
+            std::get<0>(module_outputs_) = std::get<0>(modules).forward(args);
           }
         }(),
         ...);
 
-    return std::get<sizeof...(ModuleT) - 1>(modules).output;
+    return std::get<len - 1>(module_outputs_);
+  }
+
+  template <size_t... Index>
+  const auto& backward_compose(
+      const Chain::output_t& args, std::index_sequence<Index...>) {
+    (
+        [&]() {
+          if constexpr (Index < len - 1) {
+            std::get<Index>(module_d_inputs_) = std::get<Index>(modules).backward(
+                std::get<Index + 1>(module_d_inputs_));
+          } else {
+            std::get<Index>(module_d_inputs_) = std::get<Index>(modules).backward(args);
+          }
+        }(),
+        ...);
+
+    return std::get<0>(module_d_inputs_);
   }
 };
 

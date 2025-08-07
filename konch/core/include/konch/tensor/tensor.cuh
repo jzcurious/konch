@@ -25,9 +25,14 @@ class Tensor {
   Block<AtomT> block_;
   Accessor<AtomT, view_t> accessor_;
 
+  template <ViewKind ViewT>  // TODO: check ViewT
+  Tensor(Block<AtomT>& block, const ViewT& view)
+      : block_(block)
+      , accessor_(block_.data(), view) {}
+
  public:
   Tensor()
-      : block_(view_t::numel_ct)
+      : block_(view_t::ct::numel)
       , accessor_(block_.data(), view_t()) {}
 
   view_t& view() const {
@@ -42,12 +47,21 @@ class Tensor {
     return accessor_;
   }
 
-  operator Accessor<AtomT, view_t>() {
+  operator Accessor<AtomT, view_t>&() {
     return accessor_;
   }
 
-  operator const Accessor<AtomT, view_t>() const {
+  operator const Accessor<AtomT, view_t>&() const {
     return accessor_;
+  }
+
+  Tensor review(const view_t& view) {
+    return Tensor(block_, view);
+  }
+
+  template <ViewKind ViewT>  // TODO: check ViewT
+  const Tensor review(const ViewT& view) const {
+    return Tensor(block_, view);
   }
 };
 

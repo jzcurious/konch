@@ -2,6 +2,7 @@
 #define _KONCH_MODULE_JOINT_
 
 #include "../tensor/tensor.cuh"
+#include "./state_kind.hpp"
 
 #include "./joint_kind.hpp"
 
@@ -23,6 +24,7 @@ struct ModuleJoint {
 
   using mode_t = ModeT;
   using lines_t = std::tuple<const TensorT*...>;
+  using tensors_t = std::tuple<TensorT...>;
 
   template <index_t index>
   using tensor_t = std::remove_pointer_t<typename std::tuple_element_t<index, lines_t>>;
@@ -35,11 +37,10 @@ struct ModuleJoint {
 
   ModuleJoint() = default;
 
-  ModuleJoint(const TensorT&... tensor)
-      : lines(std::forward_as_tuple(&tensor...)) {}
-
-  ModuleJoint(const TensorT*... tensor)
-      : lines(std::forward_as_tuple(tensor...)) {}
+  template <class... T>
+  ModuleJoint(const T&... args)
+    requires((TensorKind<T> or StateKind<T>) or ...)
+      : lines(std::forward_as_tuple(&static_cast<const TensorT&>(args)...)) {}
 
   ModuleJoint(const lines_t& lines)
       : lines(lines) {}

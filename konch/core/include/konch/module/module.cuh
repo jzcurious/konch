@@ -1,23 +1,34 @@
 #ifndef _KONCH_MODULE_MODULE_
 #define _KONCH_MODULE_MODULE_
 
+#include "./context.cuh"  // IWYU pragma: export
 #include "./module_kind.hpp"  // IWYU pragma: export
+#include "./parameter.cuh"  // IWYU pragma: export
+#include "./state.cuh"  // IWYU pragma: export
 
 namespace konch::internal {
 
 template <ModuleInputKind InputT, ModuleOutputKind OutputT>
 struct ModuleBase {
+  struct module_manual_feature {};
+
   using input_t = InputT;
   using output_t = OutputT;
-  using parameters_t = std::tuple<>;
 
-  InputT input;
-  OutputT output;
+  Context<InputT> input_ctx;
+  Context<OutputT> output_ctx;
 
-  const output_t& operator()(const ModuleBase::input_t& args) {
-    input(args);
-    return output(input);
+  const input_t& keep_input(const input_t& args) {
+    return input_ctx(InputT(args));
   }
+
+  const output_t& keep_output(const output_t& args) {
+    return output_ctx(OutputT(args));
+  }
+
+  output_t forward(const input_t& args) = delete;
+
+  output_t backward(const output_t& args) = delete;
 };
 
 }  // namespace konch::internal

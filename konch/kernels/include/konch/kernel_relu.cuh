@@ -13,9 +13,13 @@ struct ReLUConfig {
 namespace konch {
 
 __kernel(ReLUConfig) void relu(AutoAccessor y, const AutoAccessor x) {
-  index_t i = threadIdx.x + blockIdx.x * blockDim.x;
+  index_t j = threadIdx.x + blockIdx.x * blockDim.x;
+  index_t i = threadIdx.y + blockIdx.y * blockDim.y;
+
   typename decltype(y)::atom_t zero = 0;
-  if (i < x.view.numel) y[i] = x[i] > zero ? x[i] : zero;
+
+  if (j < x.view.size(1) and i < x.view.size(0))
+    y(i, j) = x(i, j) > zero ? x(i, j) : zero;
 }
 
 KONCH_REGISTER_KERNEL_LAUNCHER(KernelReLULauncher, relu, ReLUConfig);
