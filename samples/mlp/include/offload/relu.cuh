@@ -1,5 +1,5 @@
-#ifndef _KONCH_KERNEL_RELU_
-#define _KONCH_KERNEL_RELU_
+#ifndef _MLP_OFFLOAD__RELU_
+#define _MLP_OFFLOAD__RELU_
 
 #include <konch/core.cuh>
 
@@ -22,8 +22,8 @@ __kernel(ReLUConfig) void relu(AutoAccessor y, const AutoAccessor x) {
     y(i, j) = x(i, j) > zero ? x(i, j) : zero;
 }
 
-KONCH_REGISTER_KERNEL_LAUNCHER(KernelReLULauncher, relu, ReLUConfig);
+KONCH_REGISTER_OFFLOAD(ReLUOffload, relu, ReLUConfig);
 
 }  // namespace konch
 
-#endif  // _KONCH_KERNEL_RELU_
+#endif  // _MLP_OFFLOAD__RELU_

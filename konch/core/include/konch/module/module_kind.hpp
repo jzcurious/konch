@@ -3,16 +3,9 @@
 
 #include "./context_kind.hpp"
 #include "./joint.cuh"
+#include "./parameter_kind.hpp"
 
 namespace konch::internal {
-
-template <class T>
-concept ModuleInputRefKind
-    = std::is_reference_v<T> and ModuleInputKind<std::remove_reference_t<T>>;
-
-template <class T>
-concept ModuleOutputRefKind
-    = std::is_reference_v<T> and ModuleOutputKind<std::remove_reference_t<T>>;
 
 template <class T>
 concept ModuleInputContextRefKind
@@ -42,14 +35,9 @@ template <class T>
 concept TrainableModuleKind
     = ModuleKind<T> and requires(T x, const typename T::output_t& args) {
         { x.backward(args) } -> ModuleInputKind;
+        { x.parameters() } -> ParametersTupleKind;
       };
 
-template <class T>
-concept ChainModuleKind
-    = ModuleKind<T> and requires { typename T::chain_module_manual_feature; };
-
-template <class T>
-concept AtomicModuleKind = ModuleKind<T> and not ChainModuleKind<T>;
 }  // namespace konch
 
 #endif  // _MODULE_KIND_

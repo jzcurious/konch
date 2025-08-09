@@ -1,5 +1,5 @@
-#ifndef _KONCH_KERNEL_CONFIG_KIND_
-#define _KONCH_KERNEL_CONFIG_KIND_
+#ifndef _KONCH_OFFLOAD_CONFIG_KIND_
+#define _KONCH_OFFLOAD_CONFIG_KIND_
 
 #include <concepts>  // IWYU pragma: keep
 #include <cuda_runtime.h>
@@ -7,7 +7,7 @@
 namespace konch {
 
 template <class T>
-concept KernelConfigKind = requires(T x) {
+concept OffloadConfigKind = requires(T x) {
   { x.grid } -> std::convertible_to<dim3>;
   { x.block } -> std::convertible_to<dim3>;
   { x.shmem } -> std::convertible_to<std::size_t>;
@@ -16,4 +16,4 @@ concept KernelConfigKind = requires(T x) {
 
 }  // namespace konch
 
-#endif  // _KONCH_KERNEL_CONFIG_KIND_
+#endif  // _KONCH_OFFLOAD_CONFIG_KIND_

@@ -4,4 +4,3 @@ project(konch LANGUAGES CUDA)
 include(../cmake/cuda_compile_commands.cmake)
 
 add_subdirectory(core)
-add_subdirectory(kernels)

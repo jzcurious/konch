@@ -1,5 +1,5 @@
-#ifndef _KONCH_KERNEL_MATMUL_WMMA_
-#define _KONCH_KERNEL_MATMUL_WMMA_
+#ifndef _MLP_OFFLOAD_MATMUL_WMMA_
+#define _MLP_OFFLOAD_MATMUL_WMMA_
 
 #include <konch/core.cuh>
 
@@ -84,8 +84,8 @@ __kernel__ void matmul_wmma(AutoAccessor c,
       config.wmma_colmajor_c ? wmma::mem_col_major : wmma::mem_row_major);
 }
 
-KONCH_REGISTER_KERNEL_LAUNCHER(KernelMatmulWMMALauncher, matmul_wmma, MatmulWMMAConfig);
+KONCH_REGISTER_OFFLOAD(MatmulWMMAOffload, matmul_wmma, MatmulWMMAConfig);
 
 }  // namespace konch
 
-#endif  // _KONCH_KERNEL_MATMUL_WMMA_
+#endif  // _MLP_OFFLOAD_MATMUL_WMMA_

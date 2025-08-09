@@ -37,6 +37,10 @@ struct Chain : Module<typename internal::first_type_t<ModuleT...>::input_t,
 
   static constexpr const size_t len = sizeof...(ModuleT);
 
+  auto parameters() {
+    return collect_parameters(std::make_index_sequence<len>());
+  }
+
   Chain::output_t forward(const Chain::input_t& args) {
     return forward_compose(args, std::make_index_sequence<len>());
   }
@@ -49,6 +53,11 @@ struct Chain : Module<typename internal::first_type_t<ModuleT...>::input_t,
   std::tuple<ModuleT...> modules_;
   std::tuple<typename ModuleT::output_t...> module_outputs_;
   std::tuple<typename ModuleT::input_t...> module_d_inputs_;
+
+  template <size_t... Index>
+  auto collect_parameters(std::index_sequence<Index...>) {
+    return cat_parameters(std::get<Index>(modules_).parameters()...);
+  }
 
   template <size_t... Index>
   const auto& forward_compose(const Chain::input_t& args, std::index_sequence<Index...>) {
@@ -69,6 +78,7 @@ struct Chain : Module<typename internal::first_type_t<ModuleT...>::input_t,
   template <size_t... Index>
   const auto& backward_compose(
       const Chain::output_t& args, std::index_sequence<Index...>) {
+
     (
         [&]() {
           if constexpr (Index < len - 1) {

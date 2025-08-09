@@ -1,5 +1,5 @@
-#ifndef _KONCH_KERNEL_REDUCE_COLUMNS_
-#define _KONCH_KERNEL_REDUCE_COLUMNS_
+#ifndef _MLP_OFFLOAD_REDUCE_COLUMNS_
+#define _MLP_OFFLOAD_REDUCE_COLUMNS_
 
 #include <konch/core.cuh>
 
@@ -23,9 +23,8 @@ __kernel(ReduceColumnsConfig) void reduce_columns(AutoAccessor y, const AutoAcce
   }
 }
 
-KONCH_REGISTER_KERNEL_LAUNCHER(
-    KernelReduceColumnsLauncher, reduce_columns, ReduceColumnsConfig);
+KONCH_REGISTER_OFFLOAD(ReduceColumnsOffload, reduce_columns, ReduceColumnsConfig);
 
 }  // namespace konch
 
-#endif  // _KONCH_KERNEL_REDUCE_COLUMNS_
+#endif  // _MLP_OFFLOAD_REDUCE_COLUMNS_

@@ -6,7 +6,7 @@
 #include "./parameter.cuh"  // IWYU pragma: export
 #include "./state.cuh"  // IWYU pragma: export
 
-namespace konch::internal {
+namespace konch {
 
 template <ModuleInputKind InputT, ModuleOutputKind OutputT>
 struct ModuleBase {
@@ -26,14 +26,10 @@ struct ModuleBase {
     return output_ctx(OutputT(args));
   }
 
-  output_t forward(const input_t& args) = delete;
-
-  output_t backward(const output_t& args) = delete;
+  Parameters<> parameters() {
+    return {};
+  }
 };
-
-}  // namespace konch::internal
-
-namespace konch {
 
 template <TensorKind... TensorT>
 using I = ModuleInput<TensorT...>;
@@ -45,7 +41,7 @@ template <TensorKind... TensorT>
 using IO = ModuleInput<TensorT...>;
 
 template <ModuleInputKind InputT, class OutputT = void>
-struct Module : internal::ModuleBase<InputT,
+struct Module : ModuleBase<InputT,
                     std::conditional_t<std::is_void_v<OutputT>,
                         typename InputT::compliment_t,
                         OutputT>> {};

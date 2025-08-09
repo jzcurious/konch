@@ -1,7 +1,7 @@
 #ifndef _KONCH_GRID_HEURISTICS_CUH_
 #define _KONCH_GRID_HEURISTICS_CUH_
 
-#include "../index/index_type.hpp"
+#include "../../index/index_type.hpp"
 
 namespace konch {
 

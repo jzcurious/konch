@@ -1,8 +1,9 @@
 #include <konch/core.cuh>
-#include <konch/kernel_add_bias.cuh>
-#include <konch/kernel_matmul_wmma.cuh>
-#include <konch/kernel_reduce_columns.cuh>
-#include <konch/kernel_relu.cuh>
+
+#include "offload/add_bias.cuh"
+#include "offload/matmul_wmma.cuh"
+#include "offload/reduce_columns.cuh"
+#include "offload/relu.cuh"
 
 using namespace konch;
 
@@ -16,17 +17,21 @@ struct Linear : Module<I<Tensor<AtomT, m, k>>, O<Tensor<AtomT, m, n>>> {
   State<AtomT, m, k> dx;
 
  public:
+  auto parameters() {
+    return Parameters(w, b);
+  }
+
   Linear::output_t forward(const Linear::input_t& args) {
     this->keep_input(args);
 
     auto [x] = args.values();
 
-    KernelMatmulWMMALauncher::launch<MatmulWMMAConfig{
+    MatmulWMMAOffload::run<MatmulWMMAConfig{
         .block = {16, 16},
         .grid = {grid_cover_by_axis(n, 16), grid_cover_by_axis(m, 16)}
     }>(y, x, w);
 
-    KernelAddBiasLauncher::launch<AddBiasConfig{
+    AddBiasOffload::run<AddBiasConfig{
         .block = {128}, .grid = {grid_cover_by_axis(n, 128)}}>(y, y, b);
 
     return y;
@@ -37,21 +42,21 @@ struct Linear : Module<I<Tensor<AtomT, m, k>>, O<Tensor<AtomT, m, n>>> {
     auto [x] = this->input_ctx.values();
 
     /* dL/dx */
-    KernelMatmulWMMALauncher::launch<MatmulWMMAConfig{
+    MatmulWMMAOffload::run<MatmulWMMAConfig{
         .block = {16, 16},
         .grid = {grid_cover_by_axis(n, 16), grid_cover_by_axis(m, 16)},
         .wmma_colmajor_b = true
     }>(dx, dy, w);  // TODO: transpose w
 
     /* dL/dw */
-    KernelMatmulWMMALauncher::launch<MatmulWMMAConfig{
+    MatmulWMMAOffload::run<MatmulWMMAConfig{
         .block = {16, 16},
         .grid = {grid_cover_by_axis(n, 16), grid_cover_by_axis(m, 16)},
         .wmma_colmajor_a = true
     }>(w.grad, x, dy);  // TODO: transpose x
 
     /* dL/db */
-    KernelReduceColumnsLauncher::launch<ReduceColumnsConfig{
+    ReduceColumnsOffload::run<ReduceColumnsConfig{
         .block = {16},
         .grid = {grid_cover_by_axis(n, 16)},
     }>(b.grad, dy);
@@ -70,7 +75,7 @@ struct ReLU : Module<IO<Tensor<AtomT, m, n>>> {
   ReLU::output_t forward(const ReLU::input_t& args) {
     auto [x] = args.values();
 
-    KernelReLULauncher::launch<ReLUConfig{
+    ReLUOffload::run<ReLUConfig{
         .block = {16, 16},
         .grid = {grid_cover_by_axis(n, 16), grid_cover_by_axis(m, 16)},
     }>(y, x);
@@ -81,7 +86,7 @@ struct ReLU : Module<IO<Tensor<AtomT, m, n>>> {
   ReLU::input_t backward(const ReLU::output_t& args) {
     auto [dy] = args.values();
 
-    KernelReLULauncher::launch<ReLUConfig{
+    ReLUOffload::run<ReLUConfig{
         .block = {16, 16},
         .grid = {grid_cover_by_axis(n, 16), grid_cover_by_axis(m, 16)},
     }>(dx, dy);
@@ -107,6 +112,8 @@ int main() {
   auto [y] = mlp.forward(x);
 
   auto [dx] = mlp.backward(y);
+
+  auto params = mlp.parameters();
 
   // ...
 }

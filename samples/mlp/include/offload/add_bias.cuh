@@ -1,5 +1,5 @@
-#ifndef _KONCH_KERNEL_ADD_BIAS_
-#define _KONCH_KERNEL_ADD_BIAS_
+#ifndef _MLP_OFFLOAD_ADD_BIAS_
+#define _MLP_OFFLOAD_ADD_BIAS_
 
 #include <konch/core.cuh>
 
@@ -24,8 +24,8 @@ __kernel(AddBiasConfig) void add_bias(
   if (i < x.view.size(0) and j < x.view.size(1)) y(i, j) = x(i, j) + b[j];
 }
 
-KONCH_REGISTER_KERNEL_LAUNCHER(KernelAddBiasLauncher, add_bias, AddBiasConfig);
+KONCH_REGISTER_OFFLOAD(AddBiasOffload, add_bias, AddBiasConfig);
 
 }  // namespace konch
 
-#endif  // _KONCH_KERNEL_ADD_BIAS_
+#endif  // _MLP_OFFLOAD_ADD_BIAS_
