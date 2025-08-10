@@ -17,7 +17,7 @@ class TensorView final {
   struct view_manual_feature {};
 
  public:
-  struct ct {
+  struct meta {
     static constexpr const index_t naxis = sizeof...(_sizes);
     static constexpr const std::array<index_t, naxis> sizes = {_sizes...};
     static constexpr const bool is_scalar = naxis == 0;
@@ -36,36 +36,46 @@ class TensorView final {
     }();
   };
 
-  const index_t naxis = ct::naxis;
-  const index_t numel = ct::numel;
-  const std::array<index_t, ct::naxis> sizes = ct::sizes;
-  const bool is_scalar = ct::is_scalar;
-  const std::array<index_t, ct::naxis> strides = ct::strides;
-
-  template <IndexType auto... new_order>
-    requires((PositiveIndex<_sizes> and ...) and sizeof...(new_order) == ct::naxis)
-  auto permute() const {
-    return TensorView<ct::sizes[new_order]...>();
+  __host__ __device__ constexpr index_t naxis() const {
+    return meta::naxis;
   }
 
-  __host__ __device__ index_t size(index_t axis = 0) const {
-    if constexpr (ct::is_scalar) {
+  __host__ __device__ constexpr index_t size(index_t axis) const {
+    if constexpr (meta::is_scalar) {
       return 0;
     } else {
-      return axis < naxis ? sizes[axis] : 0;
+      return axis < meta::naxis ? size(axis) : 0;
     }
   }
 
+  __host__ __device__ constexpr bool is_scalar() const {
+    return meta::is_scalar;
+  }
+
+  __host__ __device__ constexpr index_t numel() const {
+    return meta::numel;
+  }
+
+  constexpr auto stride(index_t axis) const {
+    return meta::strides[axis];
+  }
+
+  template <IndexType auto... new_order>
+    requires((PositiveIndex<_sizes> and ...) and sizeof...(new_order) == meta::naxis)
+  auto permute() const {
+    return TensorView<size(new_order)...>();
+  }
+
   template <IndexType... IndexT>
-    requires(sizeof...(IndexT) == ct::naxis)
+    requires(sizeof...(IndexT) == meta::naxis)
   __host__ __device__ index_t operator()(IndexT... indices) const {
-    if constexpr (ct::is_scalar) {
+    if constexpr (meta::is_scalar) {
       return 0;
     } else {
       index_t address = 0;
       index_t axis = 0;
 
-      ((address += ring(indices, sizes[axis]) * strides[axis], ++axis), ...);
+      ((address += ring(indices, size(axis)) * stride(axis), ++axis), ...);
       return address;
     }
   }

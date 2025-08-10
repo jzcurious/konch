@@ -32,7 +32,7 @@ class Tensor {
 
  public:
   Tensor()
-      : block_(view_t::ct::numel)
+      : block_(view_t::meta::numel)
       , accessor_(block_.data(), view_t()) {}
 
   view_t& view() const {
