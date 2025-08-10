@@ -1,8 +1,8 @@
 #ifndef _KONCH_INITIALIZER_
 #define _KONCH_INITIALIZER_
 
-// #include "./initializer_kind.hpp"
-#include "../tensor/tensor_kind.hpp"
+#include "../../tensor/tensor_kind.hpp"
+#include "./initializer_kind.hpp"  // IWYU pragma: export
 
 namespace konch {
 

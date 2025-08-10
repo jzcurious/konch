@@ -1,7 +1,7 @@
 #ifndef _KONCH_PARAMETER_
 #define _KONCH_PARAMETER_
 
-#include "../tensor/tensor.cuh"
+#include "../../tensor/tensor.cuh"
 #include "./parameter_kind.hpp"
 
 #include <tuple>

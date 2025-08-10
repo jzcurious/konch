@@ -1,7 +1,7 @@
 #ifndef _KONCH_CHAIN_CHAIN_
 #define _KONCH_CHAIN_CHAIN_
 
-#include "../module/module.cuh"
+#include "../module/module/module.cuh"
 
 #include <tuple>
 

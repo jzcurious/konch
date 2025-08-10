@@ -1,9 +1,9 @@
 #ifndef _MODULE_KIND_
 #define _MODULE_KIND_
 
-#include "./context_kind.hpp"
-#include "./joint.cuh"
-#include "./parameter_kind.hpp"
+#include "../context/context_kind.hpp"
+#include "../joint/joint.cuh"
+#include "../parameter/parameter_kind.hpp"
 
 namespace konch::internal {
 

@@ -1,8 +1,8 @@
 #ifndef _KONCH_CONTEXT_
 #define _KONCH_CONTEXT_
 
+#include "../joint/joint_kind.hpp"
 #include "./context_kind.hpp"  // IWYU pragma: export
-#include "./joint_kind.hpp"
 
 namespace konch {
 

@@ -1,8 +1,8 @@
 #ifndef _KONCH_MODULE_JOINT_
 #define _KONCH_MODULE_JOINT_
 
-#include "../tensor/tensor.cuh"
-#include "./state_kind.hpp"
+#include "../../tensor/tensor.cuh"
+#include "../state/state_kind.hpp"
 
 #include "./joint_kind.hpp"
 
