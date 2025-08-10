@@ -36,34 +36,24 @@ class TensorView final {
     }();
   };
 
-  __host__ __device__ constexpr index_t naxis() const {
-    return meta::naxis;
-  }
+  const index_t naxis = meta::naxis;
+  const std::array<index_t, meta::naxis> sizes = meta::sizes;
+  const bool is_scalar = meta::is_scalar;
+  const index_t numel = meta::numel;
+  const std::array<index_t, meta::naxis> strides = meta::strides;
 
-  __host__ __device__ constexpr index_t size(index_t axis) const {
+  __host__ __device__ index_t size(index_t axis = 0) const {
     if constexpr (meta::is_scalar) {
       return 0;
     } else {
-      return axis < meta::naxis ? size(axis) : 0;
+      return axis < naxis ? sizes[axis] : 0;
     }
-  }
-
-  __host__ __device__ constexpr bool is_scalar() const {
-    return meta::is_scalar;
-  }
-
-  __host__ __device__ constexpr index_t numel() const {
-    return meta::numel;
-  }
-
-  constexpr auto stride(index_t axis) const {
-    return meta::strides[axis];
   }
 
   template <IndexType auto... new_order>
     requires((PositiveIndex<_sizes> and ...) and sizeof...(new_order) == meta::naxis)
   auto permute() const {
-    return TensorView<size(new_order)...>();
+    return TensorView<meta::sizes[new_order]...>();
   }
 
   template <IndexType... IndexT>
@@ -75,7 +65,7 @@ class TensorView final {
       index_t address = 0;
       index_t axis = 0;
 
-      ((address += ring(indices, size(axis)) * stride(axis), ++axis), ...);
+      ((address += ring(indices, sizes[axis]) * strides[axis], ++axis), ...);
       return address;
     }
   }
