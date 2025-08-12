@@ -9,7 +9,7 @@ template <class T>
 concept ParameterKind = requires { typename T::parameter_manual_feature; };
 
 template <class T>
-concept ParametersTupleKind = requires { typename T::parameters_manual_feature; };
+concept ParametersKind = requires { typename T::parameters_manual_feature; };
 
 }  // namespace konch
 

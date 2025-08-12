@@ -26,7 +26,7 @@ struct ModuleBase {
     return output_ctx(OutputT(args));
   }
 
-  Parameters<> parameters() {
+  Parameters<> params() {
     return {};
   }
 };

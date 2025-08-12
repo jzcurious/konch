@@ -3,14 +3,14 @@
 
 #include <konch/core.cuh>
 
+using namespace konch;
+
 struct ReLUConfig {
   dim3 block;
   dim3 grid;
   std::size_t shmem = 0;
   cudaStream_t stream = 0;
 };
-
-namespace konch {
 
 __kernel(ReLUConfig) void relu(AutoAccessor y, const AutoAccessor x) {
   index_t j = threadIdx.x + blockIdx.x * blockDim.x;
@@ -23,7 +23,5 @@ __kernel(ReLUConfig) void relu(AutoAccessor y, const AutoAccessor x) {
 }
 
 KONCH_REGISTER_OFFLOAD(ReLUOffload, relu, ReLUConfig);
-
-}  // namespace konch
 
 #endif  // _MLP_OFFLOAD__RELU_

@@ -25,8 +25,13 @@ class Tensor {
   Block<AtomT> block_;
   Accessor<AtomT, view_t> accessor_;
 
-  template <ViewKind ViewT>  // TODO: check ViewT
+  template <ViewKind ViewT>
   Tensor(Block<AtomT>& block, const ViewT& view)
+      : block_(block)
+      , accessor_(block_.data(), view) {}
+
+  template <ViewKind ViewT>
+  Tensor(const Block<AtomT>& block, const ViewT& view)
       : block_(block)
       , accessor_(block_.data(), view) {}
 
@@ -59,9 +64,19 @@ class Tensor {
     return Tensor(block_, view);
   }
 
-  template <ViewKind ViewT>  // TODO: check ViewT
+  template <ViewKind ViewT>
+    requires(ViewT::meta::numel == view_t::meta::numel)
   const Tensor review(const ViewT& view) const {
     return Tensor(block_, view);
+  }
+
+  template <IndexType auto... new_order>
+  auto permute() const {
+    return this->review(accessor_.view.template permute<new_order...>());
+  }
+
+  auto transpose() const {
+    return permute<0, 1>();
   }
 };
 

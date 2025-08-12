@@ -35,7 +35,7 @@ template <class T>
 concept TrainableModuleKind
     = ModuleKind<T> and requires(T x, const typename T::output_t& args) {
         { x.backward(args) } -> ModuleInputKind;
-        { x.parameters() } -> ParametersTupleKind;
+        { x.params() } -> ParametersKind;
       };
 
 }  // namespace konch

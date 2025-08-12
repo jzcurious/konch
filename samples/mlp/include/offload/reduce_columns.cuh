@@ -3,14 +3,14 @@
 
 #include <konch/core.cuh>
 
+using namespace konch;
+
 struct ReduceColumnsConfig {
   dim3 block;
   dim3 grid;
   std::size_t shmem = 0;
   cudaStream_t stream = 0;
 };
-
-namespace konch {
 
 __kernel(ReduceColumnsConfig) void reduce_columns(AutoAccessor y, const AutoAccessor x) {
   index_t j = blockDim.x * blockIdx.x + threadIdx.x;
@@ -24,7 +24,5 @@ __kernel(ReduceColumnsConfig) void reduce_columns(AutoAccessor y, const AutoAcce
 }
 
 KONCH_REGISTER_OFFLOAD(ReduceColumnsOffload, reduce_columns, ReduceColumnsConfig);
-
-}  // namespace konch
 
 #endif  // _MLP_OFFLOAD_REDUCE_COLUMNS_

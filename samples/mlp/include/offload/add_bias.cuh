@@ -3,6 +3,8 @@
 
 #include <konch/core.cuh>
 
+using namespace konch;
+
 struct AddBiasConfig {
   /* This class is intentionally defined outside the 'konch' namespace. This is required
    * for proper cudafe stub generation. */
@@ -12,8 +14,6 @@ struct AddBiasConfig {
   std::size_t shmem = 0;
   cudaStream_t stream = 0;
 };
-
-namespace konch {
 
 __kernel(AddBiasConfig) void add_bias(
     AutoAccessor y, const AutoAccessor x, const AutoAccessor b) {
@@ -25,7 +25,5 @@ __kernel(AddBiasConfig) void add_bias(
 }
 
 KONCH_REGISTER_OFFLOAD(AddBiasOffload, add_bias, AddBiasConfig);
-
-}  // namespace konch
 
 #endif  // _MLP_OFFLOAD_ADD_BIAS_

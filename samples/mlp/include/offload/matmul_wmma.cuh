@@ -7,11 +7,9 @@
 #include <mma.h>
 
 using namespace nvcuda;
+using namespace konch;
 
 struct MatmulWMMAConfig {
-  /* This class is intentionally defined outside the 'konch' namespace. This is required
-   * for proper cudafe stub generation. */
-
   dim3 block;
   dim3 grid;
 
@@ -25,12 +23,7 @@ struct MatmulWMMAConfig {
   bool wmma_colmajor_c = false;
 };
 
-namespace konch {
-
-__kernel__ void matmul_wmma(AutoAccessor c,
-    const AutoAccessor a,
-    const AutoAccessor b) {  // TODO: shape constraint
-
+__kernel__ void matmul_wmma(AutoAccessor c, const AutoAccessor a, const AutoAccessor b) {
   using layout_a
       = std::conditional_t<config.wmma_colmajor_a, wmma::col_major, wmma::row_major>;
 
@@ -85,7 +78,5 @@ __kernel__ void matmul_wmma(AutoAccessor c,
 }
 
 KONCH_REGISTER_OFFLOAD(MatmulWMMAOffload, matmul_wmma, MatmulWMMAConfig);
-
-}  // namespace konch
 
 #endif  // _MLP_OFFLOAD_MATMUL_WMMA_

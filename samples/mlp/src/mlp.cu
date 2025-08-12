@@ -10,14 +10,14 @@ using namespace konch;
 template <AtomKind AtomT, index_t m, index_t n, index_t k>
 struct Linear : Module<I<Tensor<AtomT, m, k>>, O<Tensor<AtomT, m, n>>> {
  private:
-  Parameter<AtomT, k, n> w;
-  Parameter<AtomT, n> b;
+  Parameter<Tensor<AtomT, k, n>, SkipInit, SkipOpt> w;
+  Parameter<Tensor<AtomT, n>, SkipInit, SkipOpt> b;
 
   State<AtomT, m, n> y;
   State<AtomT, m, k> dx;
 
  public:
-  auto parameters() {
+  auto params() {
     return Parameters(w, b);
   }
 
@@ -46,14 +46,14 @@ struct Linear : Module<I<Tensor<AtomT, m, k>>, O<Tensor<AtomT, m, n>>> {
         .block = {16, 16},
         .grid = {grid_cover_by_axis(n, 16), grid_cover_by_axis(m, 16)},
         .wmma_colmajor_b = true
-    }>(dx, dy, w);  // TODO: transpose w
+    }>(dx, dy, w.value.transpose());
 
     /* dL/dw */
     MatmulWMMAOffload::run<MatmulWMMAConfig{
         .block = {16, 16},
         .grid = {grid_cover_by_axis(n, 16), grid_cover_by_axis(m, 16)},
         .wmma_colmajor_a = true
-    }>(w.grad, x, dy);  // TODO: transpose x
+    }>(w.grad, x.transpose(), dy);
 
     /* dL/db */
     ReduceColumnsOffload::run<ReduceColumnsConfig{
@@ -113,7 +113,7 @@ int main() {
 
   auto [dx] = mlp.backward(y);
 
-  auto params = mlp.parameters();
+  auto params = mlp.params();
 
   // ...
 }

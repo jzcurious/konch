@@ -24,8 +24,8 @@ struct Offload {
 #define KONCH_REGISTER_OFFLOAD(offload_name, kernel_name, config_type)                   \
   struct offload_name : konch::Offload<offload_name> {                                   \
     template <config_type config, konch::Accessible ResultT, konch::Accessible... ArgT>  \
+      requires(OffloadConfigKind<config_type>)                                           \
     static void run(ResultT& result, const ArgT&... args) {                              \
-                                                                                         \
       kernel_name<config><<<config.grid, config.block, config.shmem, config.stream>>>(   \
           static_cast<ResultT::accessor_t>(result),                                      \
           static_cast<ArgT::accessor_t>(args)...);                                       \

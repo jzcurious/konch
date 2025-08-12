@@ -1,18 +1,16 @@
 #ifndef _KONCH_INITIALIZER_
 #define _KONCH_INITIALIZER_
 
-#include "../../tensor/tensor_kind.hpp"
+#include "../parameter/parameter_kind.hpp"
 #include "./initializer_kind.hpp"  // IWYU pragma: export
 
 namespace konch {
 
-template <TensorKind TensorT>
+template <ParameterKind ParameterT>
 struct Initializer {
   struct initializer_manual_feature {};
 
-  TensorT& operator()(TensorT& tensor) {
-    return tensor;
-  }
+  void operator()(ParameterT& param) {}
 };
 
 }  // namespace konch
