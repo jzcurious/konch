@@ -8,10 +8,10 @@
 using namespace konch;
 
 template <AtomKind AtomT, index_t m, index_t n, index_t k>
-struct Linear : Module<I<Tensor<AtomT, m, k>>, O<Tensor<AtomT, m, n>>> {
+struct Linear : Module<I<Tens<AtomT, m, k>>, O<Tens<AtomT, m, n>>> {
  private:
-  Parameter<Tensor<AtomT, k, n>, SkipInit, SkipOpt> w;
-  Parameter<Tensor<AtomT, n>, SkipInit, SkipOpt> b;
+  Parameter<Tens<AtomT, k, n>, SkipInit, SkipOpt> w;
+  Parameter<Tens<AtomT, n>, SkipInit, SkipOpt> b;
 
   State<AtomT, m, n> y;
   State<AtomT, m, k> dx;
@@ -66,7 +66,7 @@ struct Linear : Module<I<Tensor<AtomT, m, k>>, O<Tensor<AtomT, m, n>>> {
 };
 
 template <AtomKind AtomT, index_t m, index_t n>
-struct ReLU : Module<IO<Tensor<AtomT, m, n>>> {
+struct ReLU : Module<IO<Tens<AtomT, m, n>>> {
  private:
   State<AtomT, m, n> y;
   State<AtomT, m, n> dx;
@@ -104,6 +104,9 @@ using MLP = Chain<
 >;
 // clang-format on
 
+using MLPLoss = Loss<MLP, O<Tens<half, 1>>>;
+using MLPTrainer = Trainer<MLP, MLPLoss>;
+
 int main() {
   typename MLP::input_t::tensor_t<0> x;
 
@@ -116,4 +119,8 @@ int main() {
   auto params = mlp.params();
 
   // ...
+
+  MLPTrainer trainer(mlp);
+
+  trainer.step(x, {y});
 }

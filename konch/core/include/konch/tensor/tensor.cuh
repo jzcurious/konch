@@ -80,7 +80,8 @@ class Tensor {
   }
 };
 
-// TODO: add generic tensor
+template <AtomKind AtomT, index_t... sizes>
+using Tens = Tensor<AtomT, sizes...>;
 
 }  // namespace konch
 

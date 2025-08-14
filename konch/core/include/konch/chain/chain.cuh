@@ -38,7 +38,7 @@ struct Chain : Module<typename internal::first_type_t<ModuleT...>::input_t,
   static constexpr const size_t len = sizeof...(ModuleT);
 
   auto params() {
-    return collect_params(std::make_index_sequence<len>());
+    return collect_params(std::make_index_sequence<len>());  // TODO: refactor it
   }
 
   Chain::output_t forward(const Chain::input_t& args) {

@@ -18,6 +18,14 @@ struct ModuleBase {
   Context<InputT> input_ctx;
   Context<OutputT> output_ctx;
 
+  output_t forward(const input_t&) {
+    return {};
+  }
+
+  input_t backward(const output_t&) {
+    return {};
+  }
+
   const input_t& keep_input(const input_t& args) {
     return input_ctx(InputT(args));
   }
@@ -43,7 +51,7 @@ using IO = ModuleInput<TensorT...>;
 template <ModuleInputKind InputT, class OutputT = void>
 struct Module : ModuleBase<InputT,
                     std::conditional_t<std::is_void_v<OutputT>,
-                        typename InputT::compliment_t,
+                        typename InputT::complement_t,
                         OutputT>> {};
 
 }  // namespace konch

@@ -68,6 +68,16 @@ struct Parameters : std::tuple<ParameterT&...> {
   template <ParameterKind... _ParameterT>
   Parameters(const std::tuple<_ParameterT&...>& std_tuple)
       : std::tuple<ParameterT&...>(std_tuple) {}
+
+  void init() {
+    std::apply(
+        [](auto&... params) { (params.init(), ...); }, static_cast<std_tuple_t>(*this));
+  }
+
+  void update() {
+    std::apply(
+        [](auto&... params) { (params.update(), ...); }, static_cast<std_tuple_t>(*this));
+  }
 };
 
 template <ParameterKind... _ParameterT>

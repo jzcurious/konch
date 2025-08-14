@@ -8,6 +8,8 @@
 #include "module/module.cuh"      // IWYU pragma: export
 #include "offload/offload.cuh"    // IWYU pragma: export
 #include "tensor/tensor.cuh"      // IWYU pragma: export
+#include "trainer/trainer.cuh"    // IWYU pragma: export
+#include "loss/loss.cuh"          // IWYU pragma: export
 
 /* clang-format on */
 

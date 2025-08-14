@@ -29,7 +29,7 @@ struct ModuleJoint {
   template <index_t index>
   using tensor_t = std::remove_pointer_t<typename std::tuple_element_t<index, lines_t>>;
 
-  using compliment_t = std::conditional_t<std::is_same_v<mode_t, module_input>,
+  using complement_t = std::conditional_t<std::is_same_v<mode_t, module_input>,
       ModuleJoint<module_output, TensorT...>,
       ModuleJoint<module_input, TensorT...>>;
 
@@ -64,8 +64,8 @@ struct ModuleJoint {
     return *this;
   }
 
-  operator const compliment_t() const {
-    return compliment_t(lines);
+  operator const complement_t() const {
+    return complement_t(lines);
   }
 };
 
