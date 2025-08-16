@@ -8,8 +8,6 @@
 
 #include "./tensor_kind.hpp"  // IWYU pragma: export
 
-// TODO: add Matrix, Vector and Scalar
-
 namespace konch {
 
 template <AtomKind AtomT, index_t... sizes>
@@ -76,12 +74,26 @@ class Tensor {
   }
 
   auto transpose() const {
+    // TODO: case Scalar
     return permute<0, 1>();
   }
 };
 
 template <AtomKind AtomT, index_t... sizes>
 using Tens = Tensor<AtomT, sizes...>;
+
+template <AtomKind AtomT, index_t len>
+  requires(len > 0)
+using Vector = Tensor<AtomT, len>;
+
+template <AtomKind AtomT, index_t len>
+using Vec = Vector<AtomT, len>;
+
+template <AtomKind AtomT>
+using Scalar = Tensor<AtomT>;
+
+template <AtomKind AtomT>
+using Scal = Tensor<AtomT>;
 
 }  // namespace konch
 

@@ -11,7 +11,7 @@
 namespace konch {
 
 template <IndexType auto... _sizes>
-  requires(PositiveIndex<_sizes> and ...)
+  requires((not sizeof...(_sizes)) or (PositiveIndex<_sizes> and ...))
 class TensorView final {
  public:
   struct view_manual_feature {};
@@ -24,15 +24,19 @@ class TensorView final {
     static constexpr const index_t numel = is_scalar ? 1 : (_sizes * ...);
 
     static constexpr const auto strides = [] {
-      std::array<index_t, naxis> result{};
+      if constexpr (is_scalar) {
+        return std::array<index_t, 0>{};
+      } else {
+        std::array<index_t, naxis> result{};
 
-      index_t stride = 1;
-      result[naxis - 1] = 1;
+        index_t stride = 1;
+        result[naxis - 1] = 1;
 
-      for (index_t axis = naxis - 1; axis > 0; --axis)
-        result[axis - 1] = (stride *= sizes[axis]);
+        for (index_t axis = naxis - 1; axis > 0; --axis)
+          result[axis - 1] = (stride *= sizes[axis]);
 
-      return result;
+        return result;
+      }
     }();
   };
 
@@ -78,14 +82,6 @@ class TensorView final {
 
 template <IndexType auto... sizes>
 using View = TensorView<sizes...>;
-
-using ScalarView = TensorView<>;
-
-template <index_t len>
-using VectorView = TensorView<len>;
-
-template <index_t mrows, index_t ncols>
-using MatrixView = TensorView<mrows, ncols>;
 
 }  // namespace konch
 

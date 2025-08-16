@@ -104,7 +104,7 @@ using MLP = Chain<
 >;
 // clang-format on
 
-using MLPLoss = Loss<MLP, O<Tens<half, 1>>>;
+using MLPLoss = Loss<MLP, O<Vec<half, 1>>>;
 using MLPTrainer = Trainer<MLP, MLPLoss>;
 
 int main() {
@@ -112,9 +112,9 @@ int main() {
 
   MLP mlp;
 
-  auto [y] = mlp.forward(x);
+  auto [y] = mlp.forward(x).values();
 
-  auto [dx] = mlp.backward(y);
+  auto [dx] = mlp.backward(y).values();
 
   auto params = mlp.params();
 
@@ -122,5 +122,5 @@ int main() {
 
   MLPTrainer trainer(mlp);
 
-  trainer.step(x, {y});
+  trainer.step(x, y);
 }
