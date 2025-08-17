@@ -37,6 +37,10 @@ struct ModuleBase {
   Parameters<> params() {
     return {};
   }
+
+  static constexpr std::string repr() {
+    return "Module";
+  }
 };
 
 template <TensorKind... TensorT>

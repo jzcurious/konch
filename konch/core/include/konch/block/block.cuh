@@ -32,11 +32,15 @@ class Block final {
     return data_;
   }
 
+  __host__ __device__ const AtomT* data() const {
+    return data_;
+  }
+
   void copy_from_host(const AtomT* host_data) {
     cudaMemcpy(data_, host_data, size, cudaMemcpyHostToDevice);
   }
 
-  void copy_to_host(AtomT* host_data) {
+  void copy_to_host(AtomT* host_data) const {
     cudaMemcpy(host_data, data_, size, cudaMemcpyDeviceToHost);
   }
 };

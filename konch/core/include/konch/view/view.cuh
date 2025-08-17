@@ -2,11 +2,13 @@
 #define _KONCH_VIEW_
 
 #include "../index/index_type.hpp"
+#include "../utils/repr_index_pack.hpp"
 #include "./ring.cuh"
 
 #include "./view_kind.hpp"  // IWYU pragma: export
 
 #include <array>
+#include <string>
 
 namespace konch {
 
@@ -77,6 +79,11 @@ class TensorView final {
   template <ViewKind ViewT>
   __host__ __device__ bool operator==(const ViewT&) const {
     return std::is_same_v<TensorView, ViewT>;
+  }
+
+  static constexpr std::string repr() {
+    // return "View<" + utils::repr_index_pack<_sizes...>() + ">";
+    return "";
   }
 };
 

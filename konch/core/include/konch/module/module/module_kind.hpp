@@ -29,6 +29,7 @@ concept ModuleKind
             { x.forward(args) } -> ModuleOutputKind;
             { x.input_ctx } -> internal::ModuleInputContextRefKind;
             { x.output_ctx } -> internal::ModuleOutputContextRefKind;
+            { x.repr() } -> std::same_as<std::string>;
           };
 
 template <class T>

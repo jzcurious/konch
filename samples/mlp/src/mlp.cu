@@ -10,8 +10,8 @@ using namespace konch;
 template <AtomKind AtomT, index_t m, index_t n, index_t k>
 struct Linear : Module<I<Tens<AtomT, m, k>>, O<Tens<AtomT, m, n>>> {
  private:
-  Parameter<Tens<AtomT, k, n>, SkipInit, SkipOpt> w;
-  Parameter<Tens<AtomT, n>, SkipInit, SkipOpt> b;
+  Parameter<Tens<AtomT, k, n>> w;
+  Parameter<Tens<AtomT, n>> b;
 
   State<AtomT, m, n> y;
   State<AtomT, m, k> dx;

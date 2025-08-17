@@ -4,8 +4,8 @@
 #include "../accessor/accessor.cuh"
 #include "../atom/atom_kind.hpp"
 #include "../block/block.cuh"
+#include "../utils/typeof.hpp"
 #include "../view/view.cuh"
-
 #include "./tensor_kind.hpp"  // IWYU pragma: export
 
 namespace konch {
@@ -42,30 +42,32 @@ class Tensor {
     return accessor_.view;
   }
 
-  Accessor<AtomT, view_t>& accessor() {
+  accessor_t& accessor() {
     return accessor_;
   }
 
-  const Accessor<AtomT, view_t>& accessor() const {
+  const accessor_t& accessor() const {
     return accessor_;
   }
 
-  operator Accessor<AtomT, view_t>&() {
+  operator accessor_t&() {
     return accessor_;
   }
 
-  operator const Accessor<AtomT, view_t>&() const {
+  operator const accessor_t&() const {
     return accessor_;
-  }
-
-  Tensor review(const view_t& view) {
-    return Tensor(block_, view);
   }
 
   template <ViewKind ViewT>
     requires(ViewT::meta::numel == view_t::meta::numel)
-  const Tensor review(const ViewT& view) const {
-    return Tensor(block_, view);
+  accessor_t review(const ViewT& view) {
+    return accessor_t(block_.data(), view);
+  }
+
+  template <ViewKind ViewT>
+    requires(ViewT::meta::numel == view_t::meta::numel)
+  const accessor_t review(const ViewT& view) const {
+    return accessor_t(const_cast<AtomT*>(block_.data()), view);
   }
 
   template <IndexType auto... new_order>
@@ -73,9 +75,25 @@ class Tensor {
     return this->review(accessor_.view.template permute<new_order...>());
   }
 
+  auto transpose() {
+    // TODO: case Scalar
+    return permute<0, 1>();
+  }
+
   auto transpose() const {
     // TODO: case Scalar
     return permute<0, 1>();
+  }
+
+  static constexpr std::string repr() {
+    if constexpr (sizeof...(sizes) == 0)
+      return "Scalar<" + utils::type_of<AtomT>() + ">";
+    else if constexpr (sizeof...(sizes) == 1)
+      return "Vector<" + utils::type_of<AtomT>() + ", "
+             + utils::repr_index_pack<sizes...>() + ">";
+    else
+      return "Tensor<" + utils::type_of<AtomT>() + ", "
+             + utils::repr_index_pack<sizes...>() + ">";
   }
 };
 

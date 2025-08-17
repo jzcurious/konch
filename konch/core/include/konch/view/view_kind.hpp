@@ -3,10 +3,14 @@
 
 #include <concepts>  // IWYU pragma: keep
 
+#include <string>
+
 namespace konch {
 
 template <class T>
-concept ViewKind = requires { typename T::view_manual_feature; };
+concept ViewKind = requires { typename T::view_manual_feature; } and requires(T x) {
+  { x.repr() } -> std::same_as<std::string>;
+};
 
 }  // namespace konch
 
