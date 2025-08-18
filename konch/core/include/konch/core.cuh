@@ -10,6 +10,7 @@
 #include "tensor/tensor.cuh"      // IWYU pragma: export
 #include "trainer/trainer.cuh"    // IWYU pragma: export
 #include "loss/loss.cuh"          // IWYU pragma: export
+#include "utils/utils.cuh"        // IWYU pragma: export
 
 /* clang-format on */
 

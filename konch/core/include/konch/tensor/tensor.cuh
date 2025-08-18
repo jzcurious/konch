@@ -90,10 +90,10 @@ class Tensor {
       return "Scalar<" + utils::type_of<AtomT>() + ">";
     else if constexpr (sizeof...(sizes) == 1)
       return "Vector<" + utils::type_of<AtomT>() + ", "
-             + utils::repr_index_pack<sizes...>() + ">";
+             + utils::repr_values_pack<sizes...>() + ">";
     else
       return "Tensor<" + utils::type_of<AtomT>() + ", "
-             + utils::repr_index_pack<sizes...>() + ">";
+             + utils::repr_values_pack<sizes...>() + ">";
   }
 };
 

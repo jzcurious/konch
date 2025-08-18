@@ -67,6 +67,13 @@ struct ModuleJoint {
   operator const complement_t() const {
     return complement_t(lines);
   }
+
+  static constexpr std::string repr() {
+    if constexpr (std::is_same_v<ModeT, module_input>)
+      return "I<" + utils::repr_types_pack<TensorT...>() + ">";
+    else
+      return "O<" + utils::repr_types_pack<TensorT...>() + ">";
+  }
 };
 
 template <TensorKind... TensorT>

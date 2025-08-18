@@ -2,7 +2,7 @@
 #define _KONCH_VIEW_
 
 #include "../index/index_type.hpp"
-#include "../utils/repr_index_pack.hpp"
+#include "../utils/repr_pack.hpp"
 #include "./ring.cuh"
 
 #include "./view_kind.hpp"  // IWYU pragma: export
@@ -82,8 +82,7 @@ class TensorView final {
   }
 
   static constexpr std::string repr() {
-    // return "View<" + utils::repr_index_pack<_sizes...>() + ">";
-    return "";
+    return "View<" + utils::repr_values_pack<_sizes...>() + ">";
   }
 };
 

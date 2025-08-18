@@ -6,7 +6,10 @@
 namespace konch {
 
 template <class T>
-concept ModuleJointKind = requires { typename T::module_joint_manual_feature; };
+concept ModuleJointKind = requires {
+  typename T::module_joint_manual_feature;
+  { T::repr() } -> std::same_as<std::string>;
+};
 
 }  // namespace konch
 

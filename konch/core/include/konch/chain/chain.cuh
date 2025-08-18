@@ -2,6 +2,7 @@
 #define _KONCH_CHAIN_CHAIN_
 
 #include "../module/module/module.cuh"
+#include "./chain_kind.hpp"
 
 #include <tuple>
 
@@ -30,7 +31,8 @@ namespace konch {
 template <ModuleKind... ModuleT>
   requires(sizeof...(ModuleT) > 0)
 struct Chain : Module<typename internal::first_type_t<ModuleT...>::input_t,
-                   typename internal::last_type_t<ModuleT...>::output_t> {
+                   typename internal::last_type_t<ModuleT...>::output_t,
+                   Chain<ModuleT...>> {
 
  public:
   struct chain_manual_feature {};
@@ -49,8 +51,14 @@ struct Chain : Module<typename internal::first_type_t<ModuleT...>::input_t,
     return backward_compose(args, std::make_index_sequence<len>());
   }
 
+  static constexpr std::string repr() {
+    return _repr();
+  }
+
  private:
-  std::tuple<ModuleT...> modules_;
+  std::tuple<std::conditional_t<ModuleT::crtp, typename ModuleT::base_t, ModuleT>...>
+      modules_;
+
   std::tuple<typename ModuleT::output_t...> module_outputs_;
   std::tuple<typename ModuleT::input_t...> module_d_inputs_;
 
@@ -91,6 +99,29 @@ struct Chain : Module<typename internal::first_type_t<ModuleT...>::input_t,
         ...);
 
     return std::get<0>(module_d_inputs_);
+  }
+
+  static constexpr std::string _repr(index_t level = 0) {
+    auto make_indent = [](index_t n) {
+      return std::string(2 * n, ' ');
+    };
+
+    index_t i = 0;
+
+    return make_indent(level) + "Chain<\n"
+           + (...
+               + ([&level, &make_indent]() {
+                   if constexpr (ChainKind<ModuleT>) {
+                     return ModuleT::_repr(level + 1);
+                   } else {
+                     return make_indent(level + 1) + ModuleT::repr();
+                   }
+                 }()
+                   +
+                   [&i] {
+                     return i++ > 0 ? ",\n" : "\n";
+                   }()))
+           + make_indent(level) + ">";
   }
 };
 

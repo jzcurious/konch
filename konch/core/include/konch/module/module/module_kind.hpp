@@ -22,15 +22,15 @@ concept ModuleOutputContextRefKind
 namespace konch {
 
 template <class T>
-concept ModuleKind
-    = requires { typename T::module_manual_feature; }
-      and ModuleInputKind<typename T::input_t> and ModuleOutputKind<typename T::output_t>
-      and requires(T x, const typename T::input_t& args) {
-            { x.forward(args) } -> ModuleOutputKind;
-            { x.input_ctx } -> internal::ModuleInputContextRefKind;
-            { x.output_ctx } -> internal::ModuleOutputContextRefKind;
-            { x.repr() } -> std::same_as<std::string>;
-          };
+concept ModuleKind = requires {
+  typename T::module_manual_feature;
+  typename T::base_t::module_manual_feature;
+  { T::repr() } -> std::same_as<std::string>;
+} and requires(T x, const typename T::input_t& args) {
+  { x.forward(args) } -> ModuleOutputKind;
+  { x.input_ctx } -> internal::ModuleInputContextRefKind;
+  { x.output_ctx } -> internal::ModuleOutputContextRefKind;
+} and ModuleInputKind<typename T::input_t> and ModuleOutputKind<typename T::output_t>;
 
 template <class T>
 concept TrainableModuleKind

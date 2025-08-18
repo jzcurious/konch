@@ -1,7 +1,7 @@
 #ifndef _KONCH_CHAIN_CHAIN_KIND_
 #define _KONCH_CHAIN_CHAIN_KIND_
 
-#include "../module/module_kind.hpp"
+#include "../module/module/module_kind.hpp"
 #include <concepts>  // IWYU pragma: keep
 
 namespace konch {

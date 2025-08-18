@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 3.24)
-project(konch_core LANGUAGES CUDA)
+project(konch_core LANGUAGES CXX CUDA)
 
 include(../../cmake/cuda_arch.cmake)
 include(../../cmake/cuda_compile_commands.cmake)
+include(../../cmake/nvtx.cmake)
 
 find_package(CUDAToolkit REQUIRED)
 
@@ -29,4 +30,5 @@ target_compile_options(konch_core INTERFACE
 
 target_link_libraries(konch_core INTERFACE
     CUDA::cudart
+    nvtx3-cpp
 )

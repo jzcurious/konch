@@ -1,9 +1,10 @@
 #ifndef _KONCH_TYPEOF_
 #define _KONCH_TYPEOF_
 
+#include <string>
 #include <string_view>
 
-namespace konch::utils {
+namespace konch::internal {
 
 template <class T>
 consteval std::string_view type_of() {
@@ -30,6 +31,15 @@ consteval std::string_view type_of() {
     return type_name;
   }
   return "unknown";
+}
+
+}  // namespace konch::internal
+
+namespace konch::utils {
+
+template <class T>
+constexpr std::string type_of() {
+  return std::string(konch::internal::type_of<T>());
 }
 
 }  // namespace konch::utils

@@ -1,3 +1,4 @@
+#include <iostream>
 #include <konch/core.cuh>
 
 #include "offload/add_bias.cuh"
@@ -104,7 +105,7 @@ using MLP = Chain<
 >;
 // clang-format on
 
-using MLPLoss = Loss<MLP, O<Vec<half, 1>>>;
+using MLPLoss = Loss<MLP, O<Scal<half>>>;
 using MLPTrainer = Trainer<MLP, MLPLoss>;
 
 int main() {
@@ -117,6 +118,8 @@ int main() {
   auto [dx] = mlp.backward(y).values();
 
   auto params = mlp.params();
+
+  std::cout << MLP::repr() << std::endl;
 
   // ...
 

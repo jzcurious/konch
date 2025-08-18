@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.24)
-project(konch_sample_mlp LANGUAGES CUDA)
+project(konch_sample_mlp LANGUAGES CXX CUDA)
 
 include(../../cmake/cuda_compile_commands.cmake)
 include(../../cmake/cuda_arch.cmake)
