@@ -111,11 +111,10 @@ struct Chain : Module<typename internal::first_type_t<ModuleT...>::input_t,
     return make_indent(level) + "Chain<\n"
            + (...
                + ([&level, &make_indent]() {
-                   if constexpr (ChainKind<ModuleT>) {
+                   if constexpr (ChainKind<ModuleT>)
                      return ModuleT::_repr(level + 1);
-                   } else {
+                   else
                      return make_indent(level + 1) + ModuleT::repr();
-                   }
                  }()
                    +
                    [&i] {

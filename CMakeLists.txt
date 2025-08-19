@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.24)
+cmake_minimum_required(VERSION 3.31)
 project(konch_bundle LANGUAGES CXX CUDA)
 
 include(cmake/cuda_compile_commands.cmake)
